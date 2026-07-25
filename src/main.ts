@@ -1,10 +1,11 @@
 import { EngineApplication } from "./engine/application/EngineApplication";
+import { ComputeTextureModule } from "./modules/compute-texture/ComputeTextureModule";
 import { EngineDiagnosticsModule } from "./modules/engine-diagnostics/EngineDiagnosticsModule";
 import { GPUParticleModule } from "./modules/gpu-particles/GPUParticleModule";
 import { TriangleModule } from "./modules/triangle/TriangleModule";
 
 const application = new EngineApplication({
-  initialModule: "gpu-particles",
+  initialModule: "compute-texture",
   moduleCatalog: {
     triangle: {
       label: "Triangle",
@@ -13,6 +14,10 @@ const application = new EngineApplication({
     diagnostics: {
       label: "Engine Diagnostics",
       module: EngineDiagnosticsModule,
+    },
+    "compute-texture": {
+      label: "Compute Texture",
+      module: ComputeTextureModule,
     },
     "gpu-particles": {
       label: "GPU Particles",

@@ -73,6 +73,12 @@ stores the selection in the `?module=` URL parameter.
 Each module owns its shaders, pipelines, algorithm-specific data, GPU resources,
 runtime parameters, and cleanup.
 
+## Documentation
+
+- [Engine API](doc/engine-api.md)
+- [Research module guide](doc/module-guide.md)
+- [Development and validation](doc/development.md)
+
 ## Verification
 
 ```bash

@@ -171,7 +171,8 @@ The reusable application host belongs in `src/engine/application/`. Root
 implementation.
 
 Runnable module classes are listed in an explicit module catalog. Do not use
-filesystem-wide automatic discovery. Runtime switching must stop execution,
+filesystem-wide automatic discovery. Set the most recently added runnable
+module as the default `initialModule`. Runtime switching must stop execution,
 destroy the previous module and its resources, construct the selected module,
 and then resume the engine.
 

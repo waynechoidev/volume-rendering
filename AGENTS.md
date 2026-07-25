@@ -70,6 +70,7 @@ rendering algorithm.
 
 Register runnable module classes in the explicit module catalog in `src/main.ts`.
 Do not automatically expose every filesystem entry under `src/modules/`.
+Set the most recently added runnable module as the default `initialModule`.
 Switching modules must destroy the previous module and its owned resources
 before activating the next one.
 
