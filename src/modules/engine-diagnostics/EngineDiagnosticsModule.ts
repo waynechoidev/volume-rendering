@@ -1,26 +1,26 @@
-import type { CanvasSize } from "../../engine/core/CanvasSize";
+import type { CanvasSize } from "@/engine/core/CanvasSize";
 import type {
   EngineContext,
   EngineModule,
   ModuleRenderContext,
-} from "../../engine/core/EngineModule";
-import type { FrameInfo } from "../../engine/core/FrameLoop";
-import { createBindGroup } from "../../engine/graphics/bind-groups/BindGroupFactory";
-import { GPUBufferResource } from "../../engine/graphics/buffers/GPUBufferResource";
+} from "@/engine/core/EngineModule";
+import type { FrameInfo } from "@/engine/core/FrameLoop";
+import { createBindGroup } from "@/engine/graphics/bind-groups/BindGroupFactory";
+import { GPUBufferResource } from "@/engine/graphics/buffers/GPUBufferResource";
 import {
   assertShaderCompiles,
   createRenderPipeline,
-} from "../../engine/graphics/pipelines/PipelineFactory";
+} from "@/engine/graphics/pipelines/PipelineFactory";
 import {
   createDepthTexture,
   type TextureResource,
-} from "../../engine/graphics/textures/TextureResource";
-import shaderSource from "./diagnostics.wgsl?raw";
+} from "@/engine/graphics/textures/TextureResource";
+import shaderSource from "@/modules/engine-diagnostics/diagnostics.wgsl?raw";
 import {
   createCubeVertices,
   createGridVertices,
   getVertexCount,
-} from "./geometry";
+} from "@/modules/engine-diagnostics/geometry";
 
 const VERTEX_STRIDE = 6 * Float32Array.BYTES_PER_ELEMENT;
 const DEPTH_FORMAT: GPUTextureFormat = "depth24plus";

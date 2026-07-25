@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   createInitialParticles,
   PARTICLE_FLOATS,
-} from "./particle-data";
+} from "@/modules/gpu-particles/particle-data";
 
 describe("createInitialParticles", () => {
   it("creates the requested particle count", () => {

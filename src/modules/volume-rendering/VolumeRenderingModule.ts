@@ -1,24 +1,33 @@
-import type { CanvasSize } from "../../engine/core/CanvasSize";
+import type { CanvasSize } from "@/engine/core/CanvasSize";
 import type {
   EngineContext,
   EngineModule,
   ModuleRenderContext,
-} from "../../engine/core/EngineModule";
-import type { FrameInfo } from "../../engine/core/FrameLoop";
-import { UniformBuffer } from "../../engine/graphics/buffers/UniformBuffer";
+} from "@/engine/core/EngineModule";
+import type { FrameInfo } from "@/engine/core/FrameLoop";
+import { UniformBuffer } from "@/engine/graphics/buffers/UniformBuffer";
 import {
   assertShaderCompiles,
   createRenderPipeline,
-} from "../../engine/graphics/pipelines/PipelineFactory";
+} from "@/engine/graphics/pipelines/PipelineFactory";
 import {
   createSampler,
   TextureResource,
-} from "../../engine/graphics/textures/TextureResource";
-import { createVolumeData, DEFAULT_VOLUME_DIMENSIONS } from "./volume-data";
-import shaderSource from "./volume-rendering.wgsl?raw";
+} from "@/engine/graphics/textures/TextureResource";
+import { createVolumeData, DEFAULT_VOLUME_DIMENSIONS } from "@/modules/volume-rendering/volume-data";
+import contractsShaderSource from "@/modules/volume-rendering/volume.contracts.wgsl?raw";
+import densityShaderSource from "@/modules/volume-rendering/volume.density.wgsl?raw";
+import geometryShaderSource from "@/modules/volume-rendering/volume.geometry.wgsl?raw";
+import renderShaderSource from "@/modules/volume-rendering/volume.render.wgsl?raw";
 
 const PARAMETER_BYTES = 32;
 const VOLUME_FORMAT: GPUTextureFormat = "rgba8unorm";
+const shaderSource = [
+  contractsShaderSource,
+  geometryShaderSource,
+  densityShaderSource,
+  renderShaderSource,
+].join("\n");
 
 export class VolumeRenderingModule implements EngineModule {
   public readonly name = "Volume Rendering";

@@ -8,6 +8,11 @@ export default defineConfig(({ mode }) => {
 
   return {
     base: environment.BASE_PATH || "/",
+    resolve: {
+      alias: {
+        "@": decodeURIComponent(new URL("./src", import.meta.url).pathname),
+      },
+    },
     server: {
       host: "0.0.0.0",
       port: 5173,

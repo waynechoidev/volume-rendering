@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { calculateDispatchSize } from "./dispatch";
+import { calculateDispatchSize } from "@/modules/compute-texture/dispatch";
 
 describe("calculateDispatchSize", () => {
   it("covers exact workgroups", () => {

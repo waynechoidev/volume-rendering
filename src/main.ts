@@ -1,14 +1,14 @@
-import { EngineApplication } from "./engine/application/EngineApplication";
-import { ComputeTextureModule } from "./modules/compute-texture/ComputeTextureModule";
-import computeTextureReadme from "./modules/compute-texture/README.md?raw";
-import { EngineDiagnosticsModule } from "./modules/engine-diagnostics/EngineDiagnosticsModule";
-import engineDiagnosticsReadme from "./modules/engine-diagnostics/README.md?raw";
-import { GPUParticleModule } from "./modules/gpu-particles/GPUParticleModule";
-import gpuParticlesReadme from "./modules/gpu-particles/README.md?raw";
-import { TriangleModule } from "./modules/triangle/TriangleModule";
-import triangleReadme from "./modules/triangle/README.md?raw";
-import { VolumeRenderingModule } from "./modules/volume-rendering/VolumeRenderingModule";
-import volumeRenderingReadme from "./modules/volume-rendering/README.md?raw";
+import { EngineApplication } from "@/engine/application/EngineApplication";
+import { ComputeTextureModule } from "@/modules/compute-texture/ComputeTextureModule";
+import computeTextureReadme from "@/modules/compute-texture/README.md?raw";
+import { EngineDiagnosticsModule } from "@/modules/engine-diagnostics/EngineDiagnosticsModule";
+import engineDiagnosticsReadme from "@/modules/engine-diagnostics/README.md?raw";
+import { GPUParticleModule } from "@/modules/gpu-particles/GPUParticleModule";
+import gpuParticlesReadme from "@/modules/gpu-particles/README.md?raw";
+import { TriangleModule } from "@/modules/triangle/TriangleModule";
+import triangleReadme from "@/modules/triangle/README.md?raw";
+import { VolumeRenderingModule } from "@/modules/volume-rendering/VolumeRenderingModule";
+import volumeRenderingReadme from "@/modules/volume-rendering/README.md?raw";
 
 const application = new EngineApplication({
   modules: [

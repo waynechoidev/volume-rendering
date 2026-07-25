@@ -1,5 +1,5 @@
-import type { CanvasSize } from "../core/CanvasSize";
-import type { FrameInfo } from "../core/FrameLoop";
+import type { CanvasSize } from "@/engine/core/CanvasSize";
+import type { FrameInfo } from "@/engine/core/FrameLoop";
 
 const UPDATE_INTERVAL_SECONDS = 0.25;
 

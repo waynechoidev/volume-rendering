@@ -1,11 +1,11 @@
-import type { CanvasSize } from "./CanvasSize";
-import type { FrameInfo } from "./FrameLoop";
-import type { GPUContext } from "./GPUContext";
-import type { PerspectiveCamera } from "../camera/PerspectiveCamera";
-import type { CameraUniforms } from "../camera/CameraUniforms";
-import type { InputManager } from "../input/InputManager";
-import type { ParameterRegistry } from "../ui/ParameterRegistry";
-import type { Stats } from "../ui/Stats";
+import type { CanvasSize } from "@/engine/core/CanvasSize";
+import type { FrameInfo } from "@/engine/core/FrameLoop";
+import type { GPUContext } from "@/engine/core/GPUContext";
+import type { PerspectiveCamera } from "@/engine/camera/PerspectiveCamera";
+import type { CameraUniforms } from "@/engine/camera/CameraUniforms";
+import type { InputManager } from "@/engine/input/InputManager";
+import type { ParameterRegistry } from "@/engine/ui/ParameterRegistry";
+import type { Stats } from "@/engine/ui/Stats";
 
 export interface EngineContext {
   readonly gpu: GPUContext;

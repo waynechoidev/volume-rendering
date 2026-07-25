@@ -2,16 +2,16 @@ import {
   calculateCanvasSize,
   canvasSizesMatch,
   type CanvasSize,
-} from "./CanvasSize";
-import type { EngineContext, EngineModule } from "./EngineModule";
-import { FrameLoop, type FrameInfo } from "./FrameLoop";
-import { GPUContext } from "./GPUContext";
-import { CameraUniforms } from "../camera/CameraUniforms";
-import { OrbitCameraController } from "../camera/OrbitCameraController";
-import { PerspectiveCamera } from "../camera/PerspectiveCamera";
-import { InputManager } from "../input/InputManager";
-import { DebugUI } from "../ui/DebugUI";
-import { Stats } from "../ui/Stats";
+} from "@/engine/core/CanvasSize";
+import type { EngineContext, EngineModule } from "@/engine/core/EngineModule";
+import { FrameLoop, type FrameInfo } from "@/engine/core/FrameLoop";
+import { GPUContext } from "@/engine/core/GPUContext";
+import { CameraUniforms } from "@/engine/camera/CameraUniforms";
+import { OrbitCameraController } from "@/engine/camera/OrbitCameraController";
+import { PerspectiveCamera } from "@/engine/camera/PerspectiveCamera";
+import { InputManager } from "@/engine/input/InputManager";
+import { DebugUI } from "@/engine/ui/DebugUI";
+import { Stats } from "@/engine/ui/Stats";
 
 export interface EngineOptions {
   readonly maxPixelRatio?: number;

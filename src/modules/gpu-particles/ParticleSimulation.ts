@@ -1,16 +1,16 @@
-import type { FrameInfo } from "../../engine/core/FrameLoop";
-import { createBindGroup } from "../../engine/graphics/bind-groups/BindGroupFactory";
-import { GPUBufferResource } from "../../engine/graphics/buffers/GPUBufferResource";
-import { UniformBuffer } from "../../engine/graphics/buffers/UniformBuffer";
+import type { FrameInfo } from "@/engine/core/FrameLoop";
+import { createBindGroup } from "@/engine/graphics/bind-groups/BindGroupFactory";
+import { GPUBufferResource } from "@/engine/graphics/buffers/GPUBufferResource";
+import { UniformBuffer } from "@/engine/graphics/buffers/UniformBuffer";
 import {
   assertShaderCompiles,
   createComputePipeline,
-} from "../../engine/graphics/pipelines/PipelineFactory";
-import computeShaderSource from "./particle.compute.wgsl?raw";
+} from "@/engine/graphics/pipelines/PipelineFactory";
+import computeShaderSource from "@/modules/gpu-particles/particle.compute.wgsl?raw";
 import {
   createInitialParticles,
   PARTICLE_STRIDE,
-} from "./particle-data";
+} from "@/modules/gpu-particles/particle-data";
 
 const WORKGROUP_SIZE = 256;
 const PARAMETER_BYTES = 32;

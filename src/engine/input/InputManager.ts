@@ -1,5 +1,5 @@
-import { KeyboardState } from "./KeyboardState";
-import { PointerState } from "./PointerState";
+import { KeyboardState } from "@/engine/input/KeyboardState";
+import { PointerState } from "@/engine/input/PointerState";
 
 interface PointerPosition {
   x: number;

@@ -1,7 +1,7 @@
 import { mat4 } from "gl-matrix";
 import { describe, expect, it } from "vitest";
 
-import { PerspectiveCamera } from "./PerspectiveCamera";
+import { PerspectiveCamera } from "@/engine/camera/PerspectiveCamera";
 
 describe("PerspectiveCamera", () => {
   it("updates projection when the aspect ratio changes", () => {

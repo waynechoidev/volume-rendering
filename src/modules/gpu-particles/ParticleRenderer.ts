@@ -1,15 +1,15 @@
-import type { CanvasSize } from "../../engine/core/CanvasSize";
-import type { ModuleRenderContext } from "../../engine/core/EngineModule";
-import { createBindGroup } from "../../engine/graphics/bind-groups/BindGroupFactory";
+import type { CanvasSize } from "@/engine/core/CanvasSize";
+import type { ModuleRenderContext } from "@/engine/core/EngineModule";
+import { createBindGroup } from "@/engine/graphics/bind-groups/BindGroupFactory";
 import {
   assertShaderCompiles,
   createRenderPipeline,
-} from "../../engine/graphics/pipelines/PipelineFactory";
+} from "@/engine/graphics/pipelines/PipelineFactory";
 import {
   createDepthTexture,
   type TextureResource,
-} from "../../engine/graphics/textures/TextureResource";
-import renderShaderSource from "./particle.render.wgsl?raw";
+} from "@/engine/graphics/textures/TextureResource";
+import renderShaderSource from "@/modules/gpu-particles/particle.render.wgsl?raw";
 
 const DEPTH_FORMAT: GPUTextureFormat = "depth24plus";
 

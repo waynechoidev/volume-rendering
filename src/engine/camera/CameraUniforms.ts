@@ -1,5 +1,5 @@
-import type { PerspectiveCamera } from "./PerspectiveCamera";
-import { UniformBuffer } from "../graphics/buffers/UniformBuffer";
+import type { PerspectiveCamera } from "@/engine/camera/PerspectiveCamera";
+import { UniformBuffer } from "@/engine/graphics/buffers/UniformBuffer";
 
 const MATRIX_FLOATS = 16;
 const CAMERA_UNIFORM_FLOATS = 36;

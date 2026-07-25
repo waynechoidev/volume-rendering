@@ -1,20 +1,20 @@
-import type { CanvasSize } from "../../engine/core/CanvasSize";
+import type { CanvasSize } from "@/engine/core/CanvasSize";
 import type {
   EngineContext,
   EngineModule,
   ModuleRenderContext,
-} from "../../engine/core/EngineModule";
-import type { FrameInfo } from "../../engine/core/FrameLoop";
-import { UniformBuffer } from "../../engine/graphics/buffers/UniformBuffer";
+} from "@/engine/core/EngineModule";
+import type { FrameInfo } from "@/engine/core/FrameLoop";
+import { UniformBuffer } from "@/engine/graphics/buffers/UniformBuffer";
 import {
   assertShaderCompiles,
   createComputePipeline,
   createRenderPipeline,
-} from "../../engine/graphics/pipelines/PipelineFactory";
-import { TextureResource } from "../../engine/graphics/textures/TextureResource";
-import computeShaderSource from "./compute-texture.compute.wgsl?raw";
-import renderShaderSource from "./compute-texture.render.wgsl?raw";
-import { calculateDispatchSize, type DispatchSize } from "./dispatch";
+} from "@/engine/graphics/pipelines/PipelineFactory";
+import { TextureResource } from "@/engine/graphics/textures/TextureResource";
+import computeShaderSource from "@/modules/compute-texture/compute-texture.compute.wgsl?raw";
+import renderShaderSource from "@/modules/compute-texture/compute-texture.render.wgsl?raw";
+import { calculateDispatchSize, type DispatchSize } from "@/modules/compute-texture/dispatch";
 
 const OUTPUT_FORMAT: GPUTextureFormat = "rgba8unorm";
 const PARAMETER_BYTES = 32;

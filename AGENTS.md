@@ -60,6 +60,10 @@ main -> modules -> engine
 
 Engine code must never import from `modules` or `main`.
 
+Use the `@/` alias for every import whose target is under `src/`, including
+files in the same directory and raw WGSL or Markdown imports. Do not introduce
+relative `./` or `../` source imports.
+
 Examples and research implementations both belong in `modules`. Examples such
 as Triangle and Engine Diagnostics validate generic behavior but must not become
 hidden engine dependencies.

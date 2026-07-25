@@ -1,15 +1,15 @@
-import type { CanvasSize } from "../../engine/core/CanvasSize";
+import type { CanvasSize } from "@/engine/core/CanvasSize";
 import type {
   EngineContext,
   EngineModule,
   ModuleRenderContext,
-} from "../../engine/core/EngineModule";
-import type { FrameInfo } from "../../engine/core/FrameLoop";
-import { ParticleRenderer } from "./ParticleRenderer";
+} from "@/engine/core/EngineModule";
+import type { FrameInfo } from "@/engine/core/FrameLoop";
+import { ParticleRenderer } from "@/modules/gpu-particles/ParticleRenderer";
 import {
   ParticleSimulation,
   type ParticleSettings,
-} from "./ParticleSimulation";
+} from "@/modules/gpu-particles/ParticleSimulation";
 
 const DESKTOP_PARTICLE_COUNT = 131_072;
 const MOBILE_PARTICLE_COUNT = 32_768;

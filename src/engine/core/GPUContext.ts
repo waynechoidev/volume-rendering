@@ -1,4 +1,4 @@
-import type { CanvasSize } from "./CanvasSize";
+import type { CanvasSize } from "@/engine/core/CanvasSize";
 
 export class WebGPUNotSupportedError extends Error {
   public constructor(message: string) {

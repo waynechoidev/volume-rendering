@@ -1,6 +1,6 @@
 import GUI from "lil-gui";
 
-import { ParameterRegistry } from "./ParameterRegistry";
+import { ParameterRegistry } from "@/engine/ui/ParameterRegistry";
 
 export class DebugUI {
   public readonly parameters: ParameterRegistry;

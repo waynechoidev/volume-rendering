@@ -1,8 +1,8 @@
 import { vec3 } from "gl-matrix";
 
-import type { FrameInfo } from "../core/FrameLoop";
-import type { InputManager } from "../input/InputManager";
-import type { PerspectiveCamera } from "./PerspectiveCamera";
+import type { FrameInfo } from "@/engine/core/FrameLoop";
+import type { InputManager } from "@/engine/input/InputManager";
+import type { PerspectiveCamera } from "@/engine/camera/PerspectiveCamera";
 
 const MIN_PITCH = -Math.PI * 0.48;
 const MAX_PITCH = Math.PI * 0.48;

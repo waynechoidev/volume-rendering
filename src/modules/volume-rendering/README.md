@@ -144,6 +144,9 @@ fragment workload.
 ## Files
 
 - `VolumeRenderingModule.ts`: GPU resources, pipeline, parameters, and lifecycle.
-- `volume-rendering.wgsl`: ray construction, intersection, integration, lighting.
+- `volume.contracts.wgsl`: uniforms, bindings, and shared WGSL structures.
+- `volume.geometry.wgsl`: fullscreen vertex stage and ray-box intersection.
+- `volume.density.wgsl`: density sampling, gradients, and light transmittance.
+- `volume.render.wgsl`: camera-ray construction and volume integration.
 - `volume-data.ts`: deterministic CPU-side density generation.
 - `volume-data.test.ts`: density layout and determinism tests.

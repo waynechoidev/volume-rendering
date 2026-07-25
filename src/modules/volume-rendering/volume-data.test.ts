@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { createVolumeData } from "./volume-data";
+import { createVolumeData } from "@/modules/volume-rendering/volume-data";
 
 describe("createVolumeData", () => {
   it("creates one RGBA texel per voxel", () => {

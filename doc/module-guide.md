@@ -1,5 +1,17 @@
 # Research Module Guide
 
+## Imports
+
+Use the `@/` alias for all files under `src/`. This applies to TypeScript,
+module-local helpers, tests, WGSL source, and Markdown loaded with `?raw`.
+
+```ts
+import type { EngineModule } from "@/engine/core/EngineModule";
+import shaderSource from "@/modules/my-module/render.wgsl?raw";
+```
+
+Do not use relative `./` or `../` imports in source files.
+
 Create an independent directory under `src/modules/<module-name>/`. Keep its
 TypeScript integration, WGSL, pipelines, binding contracts, parameters, and
 tests together.

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { calculateCanvasSize } from "./CanvasSize";
+import { calculateCanvasSize } from "@/engine/core/CanvasSize";
 
 describe("calculateCanvasSize", () => {
   it("uses the requested DPR within the configured limit", () => {

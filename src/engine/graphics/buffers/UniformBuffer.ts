@@ -1,4 +1,4 @@
-import { GPUBufferResource } from "./GPUBufferResource";
+import { GPUBufferResource } from "@/engine/graphics/buffers/GPUBufferResource";
 
 export class UniformBuffer extends GPUBufferResource {
   public constructor(

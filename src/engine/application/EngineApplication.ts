@@ -1,8 +1,8 @@
-import { Engine } from "../core/Engine";
-import type { EngineModule } from "../core/EngineModule";
-import { renderReadme } from "./render-readme";
+import { Engine } from "@/engine/core/Engine";
+import type { EngineModule } from "@/engine/core/EngineModule";
+import { renderReadme } from "@/engine/application/render-readme";
 import "katex/dist/katex.min.css";
-import "./styles.css";
+import "@/engine/application/styles.css";
 
 const COMMON_CONTROLS = `# Controls
 
