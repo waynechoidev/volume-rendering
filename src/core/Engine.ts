@@ -3,17 +3,27 @@ import {
   canvasSizesMatch,
   type CanvasSize,
 } from "./CanvasSize";
-import type { EngineModule } from "./EngineModule";
+import type { EngineContext, EngineModule } from "./EngineModule";
 import { FrameLoop, type FrameInfo } from "./FrameLoop";
 import { GPUContext } from "./GPUContext";
+import { CameraUniforms } from "../camera/CameraUniforms";
+import { OrbitCameraController } from "../camera/OrbitCameraController";
+import { PerspectiveCamera } from "../camera/PerspectiveCamera";
+import { getGPUTimingSupport } from "../graphics/timing/GPUTimingSupport";
+import { InputManager } from "../input/InputManager";
+import { DebugUI } from "../ui/DebugUI";
+import { Stats } from "../ui/Stats";
 
 export interface EngineOptions {
   readonly maxPixelRatio?: number;
   readonly onError?: (error: Error) => void;
+  readonly uiContainer?: HTMLElement;
 }
 
 export class Engine {
   public readonly gpu: GPUContext;
+  public readonly camera: PerspectiveCamera;
+  public readonly input: InputManager;
 
   private readonly modules: EngineModule[] = [];
   private readonly frameLoop: FrameLoop;
@@ -21,6 +31,11 @@ export class Engine {
   private readonly onError: (error: Error) => void;
   private readonly resizeObserver: ResizeObserver;
   private readonly abortController = new AbortController();
+  private readonly cameraUniforms: CameraUniforms;
+  private readonly orbitController: OrbitCameraController;
+  private readonly debugUI: DebugUI;
+  private readonly stats: Stats;
+  private readonly context: EngineContext;
 
   private size: CanvasSize | undefined;
   private resizeRequested = true;
@@ -28,9 +43,31 @@ export class Engine {
 
   private constructor(
     gpu: GPUContext,
-    { maxPixelRatio = 2, onError = console.error }: EngineOptions,
+    {
+      maxPixelRatio = 2,
+      onError = console.error,
+      uiContainer = document.body,
+    }: EngineOptions,
   ) {
     this.gpu = gpu;
+    this.camera = new PerspectiveCamera();
+    this.input = new InputManager(gpu.canvas);
+    this.cameraUniforms = new CameraUniforms(gpu.device);
+    this.orbitController = new OrbitCameraController(this.camera, this.input);
+    this.debugUI = new DebugUI(uiContainer);
+    this.stats = new Stats(
+      uiContainer,
+      gpu.adapter,
+      getGPUTimingSupport(gpu.adapter),
+    );
+    this.context = {
+      gpu: this.gpu,
+      camera: this.camera,
+      cameraUniforms: this.cameraUniforms,
+      input: this.input,
+      parameters: this.debugUI.parameters,
+      stats: this.stats,
+    };
     this.maxPixelRatio = maxPixelRatio;
     this.onError = onError;
     this.frameLoop = new FrameLoop(this.renderFrame);
@@ -60,6 +97,13 @@ export class Engine {
         ),
       );
     });
+
+    const cameraFolder = this.debugUI.parameters.register("Camera");
+    cameraFolder
+      .add(this.camera, "fieldOfViewDegrees", 20, 100, 1)
+      .name("Field of view")
+      .onChange(() => this.camera.updateMatrices());
+    cameraFolder.add(this.orbitController, "reset").name("Reset view");
   }
 
   public static async create(
@@ -80,7 +124,7 @@ export class Engine {
 
     let initializationError: unknown;
     try {
-      await module.initialize(this.gpu);
+      await module.initialize(this.context);
     } catch (error) {
       initializationError = error;
     }
@@ -107,6 +151,18 @@ export class Engine {
     if (this.size) {
       module.resize(this.size);
     }
+  }
+
+  public removeModule(name: string): void {
+    this.assertActive();
+    const index = this.modules.findIndex((module) => module.name === name);
+    if (index < 0) {
+      return;
+    }
+
+    const [module] = this.modules.splice(index, 1);
+    module?.destroy();
+    this.debugUI.parameters.remove(name);
   }
 
   public start(): void {
@@ -142,6 +198,10 @@ export class Engine {
     }
 
     this.modules.length = 0;
+    this.cameraUniforms.destroy();
+    this.input.destroy();
+    this.stats.destroy();
+    this.debugUI.destroy();
     this.gpu.destroy();
   }
 
@@ -171,6 +231,9 @@ export class Engine {
         return;
       }
 
+      this.orbitController.update(frame);
+      this.cameraUniforms.update(this.camera);
+
       for (const module of this.modules) {
         module.update(frame);
       }
@@ -190,6 +253,8 @@ export class Engine {
       }
 
       this.gpu.device.queue.submit([commandEncoder.finish()]);
+      this.stats.update(frame, size);
+      this.input.endFrame();
     } catch (error) {
       this.fail(this.asError(error, "The engine failed while rendering."));
     }
@@ -213,6 +278,7 @@ export class Engine {
 
     this.size = nextSize;
     this.gpu.configure(nextSize);
+    this.camera.setAspect(nextSize.width / nextSize.height);
 
     for (const module of this.modules) {
       module.resize(nextSize);
@@ -221,6 +287,7 @@ export class Engine {
 
   private fail(error: Error): void {
     this.stop();
+    this.stats.showError(error);
     this.onError(error);
   }
 

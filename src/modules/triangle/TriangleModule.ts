@@ -1,10 +1,10 @@
 import type { CanvasSize } from "../../core/CanvasSize";
 import type {
+  EngineContext,
   EngineModule,
   ModuleRenderContext,
 } from "../../core/EngineModule";
 import type { FrameInfo } from "../../core/FrameLoop";
-import type { GPUContext } from "../../core/GPUContext";
 import shaderSource from "./triangle.wgsl?raw";
 
 export class TriangleModule implements EngineModule {
@@ -16,7 +16,7 @@ export class TriangleModule implements EngineModule {
   private device: GPUDevice | undefined;
   private readonly canvasUniformData = new Float32Array(4);
 
-  public async initialize(gpu: GPUContext): Promise<void> {
+  public async initialize({ gpu }: EngineContext): Promise<void> {
     this.device = gpu.device;
     const shaderModule = gpu.device.createShaderModule({
       label: "Triangle shader",

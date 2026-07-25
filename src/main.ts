@@ -1,5 +1,5 @@
 import { Engine } from "./core/Engine";
-import { TriangleModule } from "./modules/triangle/TriangleModule";
+import { EngineDiagnosticsModule } from "./modules/engine-diagnostics/EngineDiagnosticsModule";
 import "./styles.css";
 
 function requireElement<T extends Element>(selector: string): T {
@@ -16,6 +16,7 @@ const canvas = requireElement<HTMLCanvasElement>("#gpu-canvas");
 const status = requireElement<HTMLElement>("#status");
 const statusTitle = requireElement<HTMLElement>("#status-title");
 const statusDetail = requireElement<HTMLElement>("#status-detail");
+const app = requireElement<HTMLElement>("#app");
 
 let engine: Engine | undefined;
 
@@ -33,8 +34,9 @@ async function start(): Promise<void> {
     engine = await Engine.create(canvas, {
       maxPixelRatio: 2,
       onError: showError,
+      uiContainer: app,
     });
-    await engine.addModule(new TriangleModule());
+    await engine.addModule(new EngineDiagnosticsModule());
     engine.start();
 
     document.documentElement.dataset.state = "ready";
