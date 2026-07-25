@@ -241,6 +241,16 @@ body {
   border-radius: 50%;
 }
 
+.icon-button {
+  display: grid;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  place-items: center;
+  border-radius: 50%;
+}
+
+.icon-button svg,
 .controls-button svg {
   width: 1rem;
   height: 1rem;
@@ -248,6 +258,18 @@ body {
   stroke: currentColor;
   stroke-linecap: round;
   stroke-width: 1.8;
+}
+
+.reset-view-button {
+  position: absolute;
+  z-index: 2;
+  top: max(0.75rem, env(safe-area-inset-top));
+  right: max(0.75rem, env(safe-area-inset-right));
+  background: rgb(38 46 70 / 72%);
+}
+
+.reset-view-button:hover {
+  background: rgb(53 63 92 / 92%);
 }
 
 .engine-stats .controls-button {
@@ -337,10 +359,10 @@ body {
 }
 
 .engine-gui {
-  top: max(0.75rem, env(safe-area-inset-top)) !important;
+  top: max(3.25rem, calc(env(safe-area-inset-top) + 3.25rem)) !important;
   right: max(0.75rem, env(safe-area-inset-right)) !important;
   max-height: calc(
-    100svh - max(1.5rem, env(safe-area-inset-top) + env(safe-area-inset-bottom))
+    100svh - max(4rem, env(safe-area-inset-top) + env(safe-area-inset-bottom) + 4rem)
   );
   overflow-y: auto;
   border: 1px solid rgb(255 255 255 / 10%);

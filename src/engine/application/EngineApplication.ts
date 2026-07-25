@@ -46,6 +46,7 @@ export class EngineApplication {
   private readonly modulePicker: HTMLElement;
   private readonly modulePickerToggle: HTMLButtonElement;
   private readonly moduleSelect: HTMLSelectElement;
+  private readonly resetViewButton: HTMLButtonElement;
   private readonly controlsButton: HTMLButtonElement;
   private readonly readmeButton: HTMLButtonElement;
   private readonly readmeDialog: HTMLDialogElement;
@@ -125,6 +126,20 @@ export class EngineApplication {
     `;
     this.controlsButton.addEventListener("click", this.openControls);
 
+    this.resetViewButton = document.createElement("button");
+    this.resetViewButton.className =
+      "application-button icon-button reset-view-button";
+    this.resetViewButton.type = "button";
+    this.resetViewButton.setAttribute("aria-label", "Reset camera view");
+    this.resetViewButton.title = "Reset view";
+    this.resetViewButton.innerHTML = `
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <circle cx="12" cy="12" r="6" />
+        <path d="M12 3v3M12 18v3M3 12h3M18 12h3" />
+      </svg>
+    `;
+    this.resetViewButton.addEventListener("click", this.resetView);
+
     this.readmeButton = document.createElement("button");
     this.readmeButton.className = "application-button";
     this.readmeButton.type = "button";
@@ -155,6 +170,7 @@ export class EngineApplication {
       this.canvas,
       this.status,
       this.modulePicker,
+      this.resetViewButton,
       this.controlsButton,
       this.readmeDialog,
     );
@@ -203,6 +219,7 @@ export class EngineApplication {
       "click",
       this.toggleModulePicker,
     );
+    this.resetViewButton.removeEventListener("click", this.resetView);
     this.controlsButton.removeEventListener("click", this.openControls);
     this.readmeButton.removeEventListener("click", this.openReadme);
     this.engine?.destroy();
@@ -223,6 +240,10 @@ export class EngineApplication {
 
   private readonly handleModuleChange = (): void => {
     void this.switchModule(this.moduleSelect.selectedIndex);
+  };
+
+  private readonly resetView = (): void => {
+    this.engine?.resetCamera();
   };
 
   private readonly toggleModulePicker = (): void => {

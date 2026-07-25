@@ -5,6 +5,7 @@ const WORLD_UP = vec3.fromValues(0, 1, 0);
 export class PerspectiveCamera {
   public readonly position = vec3.fromValues(3.5, 2.8, 5.5);
   public readonly target = vec3.fromValues(0, 0.5, 0);
+  public readonly up = vec3.clone(WORLD_UP);
   public readonly viewMatrix = mat4.create();
   public readonly projectionMatrix = mat4.create();
   public readonly viewProjectionMatrix = mat4.create();
@@ -29,9 +30,14 @@ export class PerspectiveCamera {
     this.updateMatrices();
   }
 
-  public setLookAt(position: ReadonlyVec3, target: ReadonlyVec3): void {
+  public setLookAt(
+    position: ReadonlyVec3,
+    target: ReadonlyVec3,
+    up: ReadonlyVec3 = WORLD_UP,
+  ): void {
     vec3.copy(this.position, position);
     vec3.copy(this.target, target);
+    vec3.copy(this.up, up);
     this.updateMatrices();
   }
 
@@ -40,7 +46,7 @@ export class PerspectiveCamera {
     const far = Math.max(near + 0.001, this.far);
     const fieldOfView = Math.min(175, Math.max(1, this.fieldOfViewDegrees));
 
-    mat4.lookAt(this.viewMatrix, this.position, this.target, WORLD_UP);
+    mat4.lookAt(this.viewMatrix, this.position, this.target, this.up);
     mat4.perspectiveZO(
       this.projectionMatrix,
       (fieldOfView * Math.PI) / 180,

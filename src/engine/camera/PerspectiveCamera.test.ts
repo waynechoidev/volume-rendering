@@ -36,4 +36,17 @@ describe("PerspectiveCamera", () => {
 
     expect(() => camera.setAspect(0)).toThrow(RangeError);
   });
+
+  it("preserves a quaternion controller's up vector across projection updates", () => {
+    const camera = new PerspectiveCamera();
+    camera.setLookAt([3, 2, 4], [0, 0, 0], [0.4, 0.8, -0.2]);
+
+    camera.setAspect(1.75);
+
+    expect([...camera.up]).toEqual([
+      expect.closeTo(0.4),
+      expect.closeTo(0.8),
+      expect.closeTo(-0.2),
+    ]);
+  });
 });
