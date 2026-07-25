@@ -94,12 +94,15 @@ body {
   color: #ff8aa2;
 }
 
-.badge {
+.module-picker {
   position: absolute;
   z-index: 1;
   top: max(0.75rem, env(safe-area-inset-top));
   left: max(0.75rem, env(safe-area-inset-left));
-  padding: 0.48rem 0.7rem;
+  display: flex;
+  align-items: center;
+  padding: 0.4rem 0.45rem 0.4rem 0.7rem;
+  gap: 0.55rem;
   border: 1px solid rgb(255 255 255 / 10%);
   border-radius: 999px;
   color: rgb(223 230 255 / 72%);
@@ -108,12 +111,29 @@ body {
   font-weight: 650;
   letter-spacing: 0.05em;
   backdrop-filter: blur(0.75rem);
-  opacity: 0;
-  transition: opacity 240ms ease;
 }
 
-:root[data-state="ready"] .badge {
-  opacity: 1;
+.module-picker span {
+  color: #8794ad;
+  font-size: 0.62rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.module-picker select {
+  min-width: 9.5rem;
+  padding: 0.35rem 1.7rem 0.35rem 0.55rem;
+  border: 0;
+  border-radius: 999px;
+  color: #eef3ff;
+  background-color: rgb(38 46 70 / 92%);
+  font: inherit;
+  cursor: pointer;
+}
+
+.module-picker select:disabled {
+  cursor: progress;
+  opacity: 0.65;
 }
 
 .engine-gui {
@@ -185,9 +205,15 @@ body {
     border-radius: 1rem;
   }
 
-  .badge {
+  .module-picker {
     top: max(0.5rem, env(safe-area-inset-top));
     left: max(0.5rem, env(safe-area-inset-left));
+    max-width: calc(100vw - 1rem);
+  }
+
+  .module-picker select {
+    min-width: 0;
+    max-width: 11rem;
   }
 
   .engine-gui {
@@ -211,7 +237,4 @@ body {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .badge {
-    transition: none;
-  }
 }

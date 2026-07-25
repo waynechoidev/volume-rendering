@@ -51,14 +51,24 @@ resources.
 
 ## Selecting a Module
 
-`src/main.ts` is the composition entry point. Import the modules you want to run
-and pass them to `EngineApplication`:
+`src/main.ts` is the composition entry point. Register module classes in its
+explicit module catalog:
 
 ```ts
 const application = new EngineApplication({
-  modules: [new EngineDiagnosticsModule()],
+  initialModule: "diagnostics",
+  moduleCatalog: {
+    diagnostics: {
+      label: "Engine Diagnostics",
+      module: EngineDiagnosticsModule,
+    },
+  },
 });
 ```
+
+The runtime module picker lists only catalog entries. Selecting a module destroys
+the previous module and its resources, constructs the selected module class, and
+stores the selection in the `?module=` URL parameter.
 
 Each module owns its shaders, pipelines, algorithm-specific data, GPU resources,
 runtime parameters, and cleanup.

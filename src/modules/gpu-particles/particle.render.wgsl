@@ -54,12 +54,27 @@ fn vertex_main(
   );
 
   let speed = length(particle.velocity.xyz);
-  let low_color = vec3f(0.20, 0.55, 1.0);
-  let high_color = vec3f(1.0, 0.28, 0.58);
+  let radius = length(particle.position.xz);
+  let heat = 1.0 - smoothstep(0.9, params.bounds, radius);
+  let palette_phase =
+    particle.velocity.w * 6.28318 + radius * 0.31;
+  let spectral_color =
+    vec3f(0.55) +
+    vec3f(0.45) *
+      cos(palette_phase + vec3f(0.0, 2.1, 4.2));
+  let outer_color =
+    mix(vec3f(0.12, 0.18, 0.75), spectral_color, 0.72);
+  let middle_color = vec3f(1.0, 0.20, 0.055);
+  let inner_color = vec3f(1.0, 0.92, 0.62);
+  let disk_color = mix(outer_color, middle_color, smoothstep(0.0, 0.72, heat));
+  let thermal_color =
+    mix(disk_color, inner_color, smoothstep(0.68, 1.0, heat));
+  let color =
+    mix(thermal_color, spectral_color, (1.0 - heat) * 0.38);
 
   var output: VertexOutput;
   output.position = clip_position;
-  output.color = mix(low_color, high_color, clamp(speed * 0.8, 0.0, 1.0));
+  output.color = color * (0.82 + clamp(speed * 0.12, 0.0, 0.35));
   output.radial = corner;
   return output;
 }

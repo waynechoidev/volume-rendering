@@ -104,7 +104,6 @@ export class ParticleRenderer {
         depthWriteEnabled: false,
       },
     });
-
     return new ParticleRenderer(
       device,
       bindGroupLayout,

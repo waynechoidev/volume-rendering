@@ -20,10 +20,10 @@ export class GPUParticleModule implements EngineModule, ParticleSettings {
   public particleCount = window.matchMedia("(pointer: coarse)").matches
     ? MOBILE_PARTICLE_COUNT
     : DESKTOP_PARTICLE_COUNT;
-  public gravity = -0.55;
+  public gravity = 8.5;
   public speed = 1;
-  public bounds = 6;
-  public pointSize = 0.008;
+  public bounds = 8;
+  public pointSize = 0.004;
 
   private simulation: ParticleSimulation | undefined;
   private renderer: ParticleRenderer | undefined;
@@ -55,7 +55,7 @@ export class GPUParticleModule implements EngineModule, ParticleSettings {
       .onFinishChange(() => {
         this.resourcesDirty = true;
       });
-    folder.add(this, "gravity", -3, 1, 0.05).name("Gravity");
+    folder.add(this, "gravity", 2, 20, 0.25).name("Black hole mass");
     folder.add(this, "speed", 0, 3, 0.05).name("Simulation speed");
     folder.add(this, "bounds", 2, 12, 0.25).name("Bounds");
     folder.add(this, "pointSize", 0.002, 0.025, 0.001).name("Point size");

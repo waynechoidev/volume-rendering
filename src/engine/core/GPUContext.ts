@@ -43,9 +43,7 @@ export class GPUContext {
       );
     }
 
-    const adapter = await navigator.gpu.requestAdapter({
-      powerPreference: "high-performance",
-    });
+    const adapter = await navigator.gpu.requestAdapter();
 
     if (!adapter) {
       throw new WebGPUNotSupportedError(
