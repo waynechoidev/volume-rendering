@@ -14,17 +14,21 @@ tests together.
 5. Upload parameters in `update`.
 6. Encode passes with `ModuleRenderContext.commandEncoder` in `render`.
 7. Destroy owned buffers and textures and remove UI registrations in `destroy`.
-8. Add the module class to the explicit catalog in `src/main.ts`.
+8. Add the module class to the explicit `modules` list in `src/main.ts`.
 
-Catalog registration is intentional. Merely adding a folder does not expose a
+List registration is intentional. Merely adding a folder does not expose a
 module in the runtime picker:
 
 ```ts
-"my-module": {
+{
   label: "My Module",
   module: MyModule,
+  readme: myModuleReadme,
 },
 ```
+
+The `readme` field is optional. When present, the application renders its
+Markdown and LaTeX-style `\(...\)` / `\[...\]` formulas in the README overlay.
 
 ## TypeScript and WGSL contract
 
@@ -49,11 +53,3 @@ DPR and maximum texture-size limits before calling the module.
 Use shared input state. Do not attach mouse-only DOM listeners. Keep controls
 usable at narrow widths and choose conservative particle counts, texture sizes,
 and memory use for coarse-pointer mobile devices.
-
-## Reference modules
-
-- `triangle`: minimal render pipeline.
-- `engine-diagnostics`: camera, input, parameters, and diagnostics.
-- `gpu-particles`: storage-buffer compute followed by instanced rendering.
-- `compute-texture`: storage-texture compute followed by fullscreen rendering.
-

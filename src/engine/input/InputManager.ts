@@ -20,6 +20,7 @@ export class InputManager {
     element.addEventListener("pointermove", this.onPointerMove, options);
     element.addEventListener("pointerup", this.onPointerUp, options);
     element.addEventListener("pointercancel", this.onPointerUp, options);
+    element.addEventListener("contextmenu", this.onContextMenu, options);
     element.addEventListener("wheel", this.onWheel, {
       ...options,
       passive: false,
@@ -53,14 +54,32 @@ export class InputManager {
     }
 
     if (this.pointers.size === 1) {
-      this.pointer.deltaX += event.clientX - previous.x;
-      this.pointer.deltaY += event.clientY - previous.y;
+      const deltaX = event.clientX - previous.x;
+      const deltaY = event.clientY - previous.y;
+      const panning =
+        (event.buttons & 2) !== 0 ||
+        this.keyboard.isPressed("ShiftLeft") ||
+        this.keyboard.isPressed("ShiftRight");
+      if (panning) {
+        this.pointer.panDeltaX += deltaX;
+        this.pointer.panDeltaY += deltaY;
+      } else {
+        this.pointer.deltaX += deltaX;
+        this.pointer.deltaY += deltaY;
+      }
     }
 
+    const previousCentroid =
+      this.pointers.size >= 2 ? this.getPointerCentroid() : undefined;
     previous.x = event.clientX;
     previous.y = event.clientY;
 
     if (this.pointers.size >= 2) {
+      const nextCentroid = this.getPointerCentroid();
+      if (previousCentroid && nextCentroid) {
+        this.pointer.panDeltaX += nextCentroid.x - previousCentroid.x;
+        this.pointer.panDeltaY += nextCentroid.y - previousCentroid.y;
+      }
       const nextDistance = this.getPinchDistance();
       if (
         nextDistance !== undefined &&
@@ -81,6 +100,10 @@ export class InputManager {
   private readonly onWheel = (event: WheelEvent): void => {
     event.preventDefault();
     this.pointer.wheelDelta += event.deltaY;
+  };
+
+  private readonly onContextMenu = (event: Event): void => {
+    event.preventDefault();
   };
 
   private readonly onKeyDown = (event: KeyboardEvent): void => {
@@ -110,5 +133,17 @@ export class InputManager {
     }
 
     return Math.hypot(second.x - first.x, second.y - first.y);
+  }
+
+  private getPointerCentroid(): PointerPosition | undefined {
+    const positions = [...this.pointers.values()];
+    if (positions.length < 2) {
+      return undefined;
+    }
+
+    return {
+      x: (positions[0]!.x + positions[1]!.x) * 0.5,
+      y: (positions[0]!.y + positions[1]!.y) * 0.5,
+    };
   }
 }

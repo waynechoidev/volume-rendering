@@ -68,9 +68,10 @@ The reusable application host belongs in `engine/application`. Root `main.ts`
 only selects and registers what runs. It must remain thin and contain no
 rendering algorithm.
 
-Register runnable module classes in the explicit module catalog in `src/main.ts`.
+Register runnable module classes in the explicit `modules` list in `src/main.ts`.
 Do not automatically expose every filesystem entry under `src/modules/`.
-Set the most recently added runnable module as the default `initialModule`.
+Place the most recently added runnable module first in the list; the first
+entry is the default module.
 Switching modules must destroy the previous module and its owned resources
 before activating the next one.
 

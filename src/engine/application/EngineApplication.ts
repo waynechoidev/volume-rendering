@@ -1,6 +1,23 @@
 import { Engine } from "../core/Engine";
 import type { EngineModule } from "../core/EngineModule";
+import { renderReadme } from "./render-readme";
+import "katex/dist/katex.min.css";
 import "./styles.css";
+
+const COMMON_CONTROLS = `# Controls
+
+## Desktop
+
+- Drag: orbit around the scene.
+- Mouse wheel: zoom in or out.
+- Right-drag or Shift+drag: move the camera target.
+
+## Touch
+
+- One-finger drag: orbit around the scene.
+- Pinch: zoom in or out.
+- Two-finger drag: move the camera target.
+`;
 
 export interface EngineModuleConstructor {
   new (): EngineModule;
@@ -9,27 +26,30 @@ export interface EngineModuleConstructor {
 export interface ModuleCatalogEntry {
   readonly label: string;
   readonly module: EngineModuleConstructor;
+  readonly readme?: string;
 }
 
 export interface EngineApplicationOptions {
-  readonly moduleCatalog: Readonly<Record<string, ModuleCatalogEntry>>;
-  readonly initialModule: string;
+  readonly modules: readonly ModuleCatalogEntry[];
   readonly maxPixelRatio?: number;
   readonly root?: HTMLElement;
 }
 
 export class EngineApplication {
-  private readonly moduleCatalog: Readonly<
-    Record<string, ModuleCatalogEntry>
-  >;
-  private readonly initialModule: string;
+  private readonly modules: readonly ModuleCatalogEntry[];
   private readonly maxPixelRatio: number;
   private readonly root: HTMLElement;
   private readonly canvas: HTMLCanvasElement;
   private readonly status: HTMLElement;
   private readonly statusTitle: HTMLElement;
   private readonly statusDetail: HTMLElement;
+  private readonly modulePicker: HTMLElement;
+  private readonly modulePickerToggle: HTMLButtonElement;
   private readonly moduleSelect: HTMLSelectElement;
+  private readonly controlsButton: HTMLButtonElement;
+  private readonly readmeButton: HTMLButtonElement;
+  private readonly readmeDialog: HTMLDialogElement;
+  private readonly readmeContent: HTMLElement;
 
   private engine: Engine | undefined;
   private activeModule: EngineModule | undefined;
@@ -37,20 +57,15 @@ export class EngineApplication {
   private switchVersion = 0;
 
   public constructor({
-    moduleCatalog,
-    initialModule,
+    modules,
     maxPixelRatio = 2,
     root = EngineApplication.requireRoot(),
   }: EngineApplicationOptions) {
-    if (Object.keys(moduleCatalog).length === 0) {
+    if (modules.length === 0) {
       throw new Error("EngineApplication requires at least one module.");
     }
-    if (!moduleCatalog[initialModule]) {
-      throw new Error(`Unknown initial module "${initialModule}".`);
-    }
 
-    this.moduleCatalog = moduleCatalog;
-    this.initialModule = initialModule;
+    this.modules = modules;
     this.maxPixelRatio = maxPixelRatio;
     this.root = root;
     this.root.classList.add("engine-application");
@@ -75,23 +90,81 @@ export class EngineApplication {
     this.statusDetail.textContent = "Preparing the rendering device…";
     this.status.append(eyebrow, this.statusTitle, this.statusDetail);
 
-    const modulePicker = document.createElement("label");
-    modulePicker.className = "module-picker";
-    const modulePickerLabel = document.createElement("span");
-    modulePickerLabel.textContent = "Module";
+    this.modulePicker = document.createElement("div");
+    this.modulePicker.className = "module-picker";
+    this.modulePickerToggle = document.createElement("button");
+    this.modulePickerToggle.className = "module-picker__toggle";
+    this.modulePickerToggle.type = "button";
+    this.modulePickerToggle.setAttribute("aria-label", "Collapse module picker");
+    this.modulePickerToggle.setAttribute("aria-expanded", "true");
+    this.modulePickerToggle.innerHTML = `
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="m14 6-6 6 6 6" />
+      </svg>
+    `;
+    this.modulePickerToggle.addEventListener("click", this.toggleModulePicker);
     this.moduleSelect = document.createElement("select");
     this.moduleSelect.setAttribute("aria-label", "Active WebGPU module");
 
-    for (const [id, entry] of Object.entries(moduleCatalog)) {
+    for (const [index, entry] of modules.entries()) {
       const option = document.createElement("option");
-      option.value = id;
+      option.value = String(index);
       option.textContent = entry.label;
       this.moduleSelect.append(option);
     }
 
-    modulePicker.append(modulePickerLabel, this.moduleSelect);
-    this.root.replaceChildren(this.canvas, this.status, modulePicker);
-    this.moduleSelect.addEventListener("change", this.handleModuleChange);
+    this.controlsButton = document.createElement("button");
+    this.controlsButton.className = "application-button controls-button";
+    this.controlsButton.type = "button";
+    this.controlsButton.setAttribute("aria-label", "Open controls");
+    this.controlsButton.title = "Controls";
+    this.controlsButton.innerHTML = `
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M4 7h10m4 0h2M4 17h2m4 0h10M14 4v6M6 14v6" />
+      </svg>
+    `;
+    this.controlsButton.addEventListener("click", this.openControls);
+
+    this.readmeButton = document.createElement("button");
+    this.readmeButton.className = "application-button";
+    this.readmeButton.type = "button";
+    this.readmeButton.textContent = "README";
+    this.readmeButton.addEventListener("click", this.openReadme);
+
+    this.readmeDialog = document.createElement("dialog");
+    this.readmeDialog.className = "readme-dialog";
+    const readmeBody = document.createElement("div");
+    readmeBody.className = "readme-dialog__body";
+    const readmeClose = document.createElement("button");
+    readmeClose.className = "readme-dialog__close";
+    readmeClose.type = "button";
+    readmeClose.setAttribute("aria-label", "Close README");
+    readmeClose.textContent = "Close";
+    readmeClose.addEventListener("click", this.closeReadme);
+    this.readmeContent = document.createElement("article");
+    this.readmeContent.className = "readme-content";
+    readmeBody.append(readmeClose, this.readmeContent);
+    this.readmeDialog.append(readmeBody);
+
+    this.modulePicker.append(
+      this.moduleSelect,
+      this.readmeButton,
+      this.modulePickerToggle,
+    );
+    this.root.replaceChildren(
+      this.canvas,
+      this.status,
+      this.modulePicker,
+      this.controlsButton,
+      this.readmeDialog,
+    );
+
+    if (modules.length > 1) {
+      this.moduleSelect.addEventListener("change", this.handleModuleChange);
+    } else {
+      this.moduleSelect.classList.add("module-picker__single");
+      this.moduleSelect.disabled = true;
+    }
   }
 
   public async start(): Promise<void> {
@@ -100,21 +173,16 @@ export class EngineApplication {
     }
 
     try {
+      this.removeLegacyModuleParameter();
       this.engine = await Engine.create(this.canvas, {
         maxPixelRatio: this.maxPixelRatio,
         onError: this.showError,
         uiContainer: this.root,
       });
+      this.root.querySelector(".engine-stats")?.append(this.controlsButton);
 
-      const requestedModule = new URL(window.location.href).searchParams.get(
-        "module",
-      );
-      const initialModule =
-        requestedModule && this.moduleCatalog[requestedModule]
-          ? requestedModule
-          : this.initialModule;
-      this.moduleSelect.value = initialModule;
-      await this.switchModule(initialModule);
+      this.moduleSelect.selectedIndex = 0;
+      await this.switchModule(0);
     } catch (error) {
       this.showError(
         error instanceof Error
@@ -131,6 +199,12 @@ export class EngineApplication {
 
     this.destroyed = true;
     this.moduleSelect.removeEventListener("change", this.handleModuleChange);
+    this.modulePickerToggle.removeEventListener(
+      "click",
+      this.toggleModulePicker,
+    );
+    this.controlsButton.removeEventListener("click", this.openControls);
+    this.readmeButton.removeEventListener("click", this.openReadme);
     this.engine?.destroy();
     this.engine = undefined;
     this.activeModule = undefined;
@@ -148,15 +222,42 @@ export class EngineApplication {
   };
 
   private readonly handleModuleChange = (): void => {
-    void this.switchModule(this.moduleSelect.value);
+    void this.switchModule(this.moduleSelect.selectedIndex);
   };
 
-  private async switchModule(id: string): Promise<void> {
-    const entry = this.moduleCatalog[id];
+  private readonly toggleModulePicker = (): void => {
+    const collapsed = this.modulePicker.dataset.collapsed !== "true";
+    this.modulePicker.dataset.collapsed = String(collapsed);
+    this.modulePickerToggle.setAttribute("aria-expanded", String(!collapsed));
+    this.modulePickerToggle.setAttribute(
+      "aria-label",
+      collapsed ? "Expand module picker" : "Collapse module picker",
+    );
+  };
+
+  private readonly openControls = (): void => {
+    this.readmeContent.innerHTML = renderReadme(COMMON_CONTROLS);
+    this.readmeDialog.showModal();
+  };
+
+  private readonly openReadme = (): void => {
+    const entry = this.modules[this.moduleSelect.selectedIndex];
+    if (!entry?.readme) return;
+    this.readmeContent.innerHTML = renderReadme(entry.readme);
+    this.readmeDialog.showModal();
+  };
+
+  private readonly closeReadme = (): void => {
+    this.readmeDialog.close();
+  };
+
+  private async switchModule(index: number): Promise<void> {
+    const entry = this.modules[index];
     const engine = this.engine;
     if (!entry || !engine || this.destroyed) {
       return;
     }
+    this.readmeButton.hidden = !entry.readme;
 
     const version = ++this.switchVersion;
     this.moduleSelect.disabled = true;
@@ -173,9 +274,9 @@ export class EngineApplication {
         engine.removeModule(this.activeModule.name);
       }
 
+      engine.resetCamera();
       await engine.addModule(nextModule);
       this.activeModule = nextModule;
-      this.updateModuleUrl(id);
       this.status.classList.remove("status--error");
       this.status.hidden = true;
       document.documentElement.dataset.state = "ready";
@@ -188,14 +289,18 @@ export class EngineApplication {
       );
     } finally {
       if (version === this.switchVersion && !this.destroyed) {
-        this.moduleSelect.disabled = false;
+        this.moduleSelect.disabled = this.modules.length === 1;
       }
     }
   }
 
-  private updateModuleUrl(id: string): void {
+  private removeLegacyModuleParameter(): void {
     const url = new URL(window.location.href);
-    url.searchParams.set("module", id);
+    if (!url.searchParams.has("module")) {
+      return;
+    }
+
+    url.searchParams.delete("module");
     window.history.replaceState(null, "", url);
   }
 

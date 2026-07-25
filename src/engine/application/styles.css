@@ -113,20 +113,19 @@ body {
   backdrop-filter: blur(0.75rem);
 }
 
-.module-picker span {
-  color: #8794ad;
-  font-size: 0.62rem;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-}
-
 .module-picker select {
-  min-width: 9.5rem;
+  width: auto;
+  min-width: 0;
   padding: 0.35rem 1.7rem 0.35rem 0.55rem;
-  border: 0;
+  appearance: none;
+  border: 1px solid rgb(255 255 255 / 10%);
   border-radius: 999px;
   color: #eef3ff;
-  background-color: rgb(38 46 70 / 92%);
+  background-color: rgb(38 46 70 / 72%);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23aeb8ce' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m7 9 5 5 5-5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.65rem center;
+  background-size: 1rem;
   font: inherit;
   cursor: pointer;
 }
@@ -134,6 +133,207 @@ body {
 .module-picker select:disabled {
   cursor: progress;
   opacity: 0.65;
+}
+
+.module-picker select:not(:disabled):hover {
+  background-color: rgb(53 63 92 / 92%);
+}
+
+.module-picker select.module-picker__single {
+  padding-right: 0.55rem;
+  background-image: none;
+  cursor: default;
+  opacity: 1;
+}
+
+.module-picker__toggle {
+  display: grid;
+  width: 1.7rem;
+  height: 1.7rem;
+  margin-right: 0.2rem;
+  padding: 0;
+  place-items: center;
+  border: 1px solid rgb(255 255 255 / 10%);
+  border-radius: 50%;
+  color: #aeb8ce;
+  background: rgb(38 46 70 / 72%);
+  font: inherit;
+  font-weight: 550;
+  cursor: pointer;
+}
+
+.module-picker__toggle svg,
+.engine-stats__toggle svg {
+  display: block;
+  width: 0.9rem;
+  height: 0.9rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+}
+
+.module-picker__toggle:hover {
+  background: rgb(53 63 92 / 92%);
+}
+
+.module-picker[data-collapsed="true"] {
+  width: 1.7rem;
+  height: 1.7rem;
+  padding: 0;
+  justify-content: center;
+  gap: 0;
+  border: 0;
+  background: transparent;
+  backdrop-filter: none;
+}
+
+.module-picker[data-collapsed="true"] > :not(.module-picker__toggle) {
+  display: none;
+}
+
+.module-picker[data-collapsed="true"] .module-picker__toggle {
+  width: 1.7rem;
+  height: 1.7rem;
+  margin-right: 0;
+  transform: rotate(180deg);
+}
+
+.application-button,
+.readme-dialog__close {
+  padding: 0.45rem 0.7rem;
+  border: 1px solid rgb(255 255 255 / 12%);
+  border-radius: 999px;
+  color: #eef3ff;
+  background: rgb(38 46 70 / 92%);
+  font: inherit;
+  font-weight: 550;
+  cursor: pointer;
+}
+
+.application-button[hidden] {
+  display: none;
+}
+
+.module-picker .application-button {
+  padding: 0.35rem 0.55rem;
+  border-color: rgb(255 255 255 / 10%);
+  background: rgb(38 46 70 / 72%);
+  font-size: inherit;
+  font-weight: 550;
+}
+
+.module-picker .application-button:hover {
+  background: rgb(53 63 92 / 92%);
+}
+
+.controls-button {
+  position: absolute;
+  z-index: 2;
+  right: max(0.75rem, env(safe-area-inset-right));
+  bottom: max(0.75rem, env(safe-area-inset-bottom));
+  display: grid;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  place-items: center;
+  border-radius: 50%;
+}
+
+.controls-button svg {
+  width: 1rem;
+  height: 1rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-width: 1.8;
+}
+
+.engine-stats .controls-button {
+  position: absolute;
+  top: 0.4rem;
+  right: 2.45rem;
+  pointer-events: auto;
+}
+
+.readme-dialog {
+  width: min(52rem, calc(100vw - 2rem));
+  max-height: calc(100svh - 2rem);
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid rgb(255 255 255 / 14%);
+  border-radius: 1rem;
+  color: #e8eefc;
+  background: rgb(10 14 25 / 97%);
+  box-shadow: 0 2rem 7rem rgb(0 0 0 / 60%);
+}
+
+.readme-dialog::backdrop {
+  background: rgb(2 4 9 / 72%);
+  backdrop-filter: blur(0.35rem);
+}
+
+.readme-dialog__body {
+  max-height: calc(100svh - 2rem);
+  overflow: auto;
+}
+
+.readme-dialog__close {
+  position: sticky;
+  z-index: 2;
+  top: 0.75rem;
+  float: right;
+  margin: 0.75rem 0.75rem 0 0;
+  font-size: 0.72rem;
+}
+
+.readme-content {
+  padding: clamp(1.25rem, 4vw, 2.5rem);
+  color: #cbd5e9;
+  font-size: 0.92rem;
+  line-height: 1.7;
+}
+
+.readme-content h1,
+.readme-content h2,
+.readme-content h3 {
+  clear: both;
+  color: #f4f7ff;
+  line-height: 1.25;
+}
+
+.readme-content h1 {
+  margin-top: 0;
+  padding-right: 4rem;
+}
+
+.readme-content a {
+  color: #91cfff;
+}
+
+.readme-content pre,
+.readme-content code {
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+}
+
+.readme-content pre {
+  padding: 0.9rem;
+  overflow-x: auto;
+  border-radius: 0.65rem;
+  background: #050812;
+}
+
+.readme-content :not(pre) > code {
+  padding: 0.15rem 0.3rem;
+  border-radius: 0.3rem;
+  background: rgb(255 255 255 / 8%);
+}
+
+.readme-content .katex-display {
+  margin: 1.2rem 0;
+  overflow-x: auto;
+  overflow-y: hidden;
 }
 
 .engine-gui {
@@ -174,10 +374,74 @@ body {
   backdrop-filter: blur(0.8rem);
 }
 
-.engine-stats div {
+.engine-stats__content {
+  display: grid;
+  gap: 0.38rem;
+}
+
+.engine-stats__content > div {
   display: grid;
   grid-template-columns: 3.3rem minmax(0, 1fr);
   gap: 0.65rem;
+}
+
+.engine-stats__content > div:first-child {
+  padding-right: 4rem;
+}
+
+.engine-stats__toggle,
+.engine-stats .controls-button {
+  position: absolute;
+  display: grid;
+  width: 1.7rem;
+  height: 1.7rem;
+  padding: 0;
+  place-items: center;
+  border: 1px solid rgb(255 255 255 / 10%);
+  border-radius: 50%;
+  color: #aab5cc;
+  background: rgb(38 46 70 / 72%);
+  font: inherit;
+  font-weight: 550;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.engine-stats__toggle {
+  top: 0.4rem;
+  right: 0.55rem;
+}
+
+.engine-stats__toggle:hover,
+.engine-stats .controls-button:hover {
+  background: rgb(53 63 92 / 92%);
+}
+
+.engine-stats[data-collapsed="true"] {
+  width: 1.7rem;
+  min-height: 1.7rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+.engine-stats[data-collapsed="true"] .engine-stats__content {
+  display: none;
+}
+
+.engine-stats[data-collapsed="true"] .controls-button {
+  display: none;
+}
+
+.engine-stats[data-collapsed="true"] .engine-stats__toggle {
+  width: 1.7rem;
+  height: 1.7rem;
+  top: 50%;
+  right: auto;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(180deg);
 }
 
 .engine-stats span {
@@ -214,6 +478,21 @@ body {
   .module-picker select {
     min-width: 0;
     max-width: 11rem;
+  }
+
+  .readme-dialog {
+    width: calc(100vw - 1rem);
+    max-height: calc(100svh - 1rem);
+  }
+
+  .readme-dialog__body {
+    max-height: calc(100svh - 1rem);
+  }
+
+  .readme-content {
+    max-height: calc(100svh - 1rem);
+    padding: 1rem;
+    font-size: 0.84rem;
   }
 
   .engine-gui {

@@ -12,9 +12,12 @@
   },
   "dependencies": {
     "gl-matrix": "^3.4.4",
-    "lil-gui": "^0.20.0"
+    "katex": "^0.18.1",
+    "lil-gui": "^0.20.0",
+    "marked": "^18.0.7"
   },
   "devDependencies": {
+    "@types/katex": "^0.16.8",
     "@webgpu/types": "^0.1.69",
     "typescript": "^5.9.2",
     "vite": "^7.0.0",

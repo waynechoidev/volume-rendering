@@ -5,6 +5,7 @@ const UPDATE_INTERVAL_SECONDS = 0.25;
 
 export class Stats {
   private readonly element: HTMLElement;
+  private readonly toggle: HTMLButtonElement;
   private readonly frameValue: HTMLElement;
   private readonly gpuValue: HTMLElement;
   private readonly canvasValue: HTMLElement;
@@ -20,12 +21,22 @@ export class Stats {
     this.element.className = "engine-stats";
     this.element.setAttribute("aria-label", "Engine statistics");
     this.element.innerHTML = `
-      <div><span>Frame</span><strong data-stat="frame">—</strong></div>
-      <div><span>GPU</span><strong data-stat="gpu">—</strong></div>
-      <div><span>Canvas</span><strong data-stat="canvas">—</strong></div>
+      <button class="engine-stats__toggle" type="button"
+        aria-label="Collapse statistics" aria-expanded="true">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="m6 9 6 6 6-6" />
+        </svg>
+      </button>
+      <div class="engine-stats__content">
+        <div><span>Frame</span><strong data-stat="frame">—</strong></div>
+        <div><span>GPU</span><strong data-stat="gpu">—</strong></div>
+        <div><span>Canvas</span><strong data-stat="canvas">—</strong></div>
+      </div>
     `;
     container.append(this.element);
 
+    this.toggle = this.requireToggle();
+    this.toggle.addEventListener("click", this.toggleCollapsed);
     this.frameValue = this.requireStat("frame");
     this.gpuValue = this.requireStat("gpu");
     this.canvasValue = this.requireStat("canvas");
@@ -61,7 +72,27 @@ export class Stats {
   }
 
   public destroy(): void {
+    this.toggle.removeEventListener("click", this.toggleCollapsed);
     this.element.remove();
+  }
+
+  private readonly toggleCollapsed = (): void => {
+    const collapsed = this.element.dataset.collapsed !== "true";
+    this.element.dataset.collapsed = String(collapsed);
+    this.toggle.setAttribute("aria-expanded", String(!collapsed));
+    this.toggle.setAttribute(
+      "aria-label",
+      collapsed ? "Expand statistics" : "Collapse statistics",
+    );
+  };
+
+  private requireToggle(): HTMLButtonElement {
+    const toggle =
+      this.element.querySelector<HTMLButtonElement>(".engine-stats__toggle");
+    if (!toggle) {
+      throw new Error("Missing engine statistics toggle.");
+    }
+    return toggle;
   }
 
   private requireStat(name: string): HTMLElement {

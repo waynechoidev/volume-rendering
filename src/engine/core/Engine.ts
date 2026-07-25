@@ -160,6 +160,11 @@ export class Engine {
     this.debugUI.parameters.remove(name);
   }
 
+  public resetCamera(): void {
+    this.assertActive();
+    this.orbitController.reset();
+  }
+
   public start(): void {
     this.assertActive();
 

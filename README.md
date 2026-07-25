@@ -28,6 +28,13 @@ For remote development:
 The certificate must match the hostname used by the browser. An HTTPS URL using
 a raw IP address or an unconfigured short hostname is not sufficient.
 
+## Camera Controls
+
+- Drag: orbit
+- Mouse wheel or pinch: zoom
+- Right-drag or Shift+drag: pan
+- Two-finger drag: pan
+
 ## Project Structure
 
 ```text
@@ -52,23 +59,26 @@ resources.
 ## Selecting a Module
 
 `src/main.ts` is the composition entry point. Register module classes in its
-explicit module catalog:
+explicit `modules` list:
 
 ```ts
 const application = new EngineApplication({
-  initialModule: "diagnostics",
-  moduleCatalog: {
-    diagnostics: {
+  modules: [
+    {
       label: "Engine Diagnostics",
       module: EngineDiagnosticsModule,
+      readme: engineDiagnosticsReadme,
     },
-  },
+  ],
 });
 ```
 
-The runtime module picker lists only catalog entries. Selecting a module destroys
-the previous module and its resources, constructs the selected module class, and
-stores the selection in the `?module=` URL parameter.
+The runtime module picker lists the configured entries. Selecting a module destroys
+the previous module and its resources and constructs the selected module class.
+Selection does not modify the page URL; reloading starts the first `modules`
+entry. Shared desktop and touch controls are available through the controls icon
+in the statistics panel. When a module supplies Markdown through `readme`, its
+separate `README` button opens a responsive viewer with KaTeX math rendering.
 
 Each module owns its shaders, pipelines, algorithm-specific data, GPU resources,
 runtime parameters, and cleanup.

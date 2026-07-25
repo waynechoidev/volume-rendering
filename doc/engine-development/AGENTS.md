@@ -170,9 +170,9 @@ The reusable application host belongs in `src/engine/application/`. Root
 `src/main.ts` selects active modules but contains no algorithm or GPU pipeline
 implementation.
 
-Runnable module classes are listed in an explicit module catalog. Do not use
-filesystem-wide automatic discovery. Set the most recently added runnable
-module as the default `initialModule`. Runtime switching must stop execution,
+Runnable module classes are listed in an explicit `modules` list. Do not use
+filesystem-wide automatic discovery. Place the most recently added runnable
+module first because the first list entry is the default. Runtime switching must stop execution,
 destroy the previous module and its resources, construct the selected module,
 and then resume the engine.
 
