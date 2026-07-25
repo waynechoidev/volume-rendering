@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#080b12" />
+    <title>WebGPU Research Engine</title>
+  </head>
+  <body>
+    <main id="app" aria-label="WebGPU Research Engine">
+      <canvas id="gpu-canvas" aria-label="WebGPU rendering canvas"></canvas>
+      <section id="status" class="status" role="status" aria-live="polite">
+        <p class="status__eyebrow">WebGPU Research Engine</p>
+        <h1 id="status-title">Initializing GPU</h1>
+        <p id="status-detail">Preparing the rendering device…</p>
+      </section>
+      <div class="badge" aria-hidden="true">Stage 1 · Triangle</div>
+    </main>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

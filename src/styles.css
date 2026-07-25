@@ -1,0 +1,134 @@
+:root {
+  color: #f4f7ff;
+  background: #080b12;
+  font-family:
+    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  font-synthesis: none;
+  color-scheme: dark;
+  -webkit-tap-highlight-color: transparent;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+}
+
+body {
+  min-width: 240px;
+  min-height: 240px;
+  overscroll-behavior: none;
+}
+
+#app {
+  position: relative;
+  isolation: isolate;
+  min-height: 100svh;
+  background:
+    radial-gradient(circle at 50% 42%, rgb(51 65 110 / 24%), transparent 42%),
+    #080b12;
+}
+
+#gpu-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+}
+
+.status {
+  position: absolute;
+  z-index: 2;
+  inset: 50% auto auto 50%;
+  width: min(34rem, calc(100% - 2rem));
+  padding: clamp(1.1rem, 4vw, 1.75rem);
+  overflow-wrap: anywhere;
+  transform: translate(-50%, -50%);
+  border: 1px solid rgb(151 170 255 / 18%);
+  border-radius: 1.25rem;
+  background: rgb(12 17 30 / 88%);
+  box-shadow: 0 1.5rem 5rem rgb(0 0 0 / 36%);
+  backdrop-filter: blur(1rem);
+}
+
+.status[hidden] {
+  display: none;
+}
+
+.status__eyebrow {
+  margin: 0 0 0.6rem;
+  color: #91a5ff;
+  font-size: 0.72rem;
+  font-weight: 750;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.status h1 {
+  margin: 0;
+  font-size: clamp(1.35rem, 5vw, 2rem);
+  line-height: 1.12;
+}
+
+.status p:last-child {
+  margin: 0.8rem 0 0;
+  color: #aeb8ce;
+  font-size: clamp(0.88rem, 2.8vw, 1rem);
+  line-height: 1.55;
+}
+
+.status--error {
+  border-color: rgb(255 102 130 / 34%);
+}
+
+.status--error .status__eyebrow {
+  color: #ff8aa2;
+}
+
+.badge {
+  position: absolute;
+  z-index: 1;
+  top: max(0.75rem, env(safe-area-inset-top));
+  left: max(0.75rem, env(safe-area-inset-left));
+  padding: 0.48rem 0.7rem;
+  border: 1px solid rgb(255 255 255 / 10%);
+  border-radius: 999px;
+  color: rgb(223 230 255 / 72%);
+  background: rgb(7 10 18 / 58%);
+  font-size: 0.7rem;
+  font-weight: 650;
+  letter-spacing: 0.05em;
+  backdrop-filter: blur(0.75rem);
+  opacity: 0;
+  transition: opacity 240ms ease;
+}
+
+:root[data-state="ready"] .badge {
+  opacity: 1;
+}
+
+@media (max-width: 480px) {
+  .status {
+    width: calc(100% - 1.25rem);
+    border-radius: 1rem;
+  }
+
+  .badge {
+    top: max(0.5rem, env(safe-area-inset-top));
+    left: max(0.5rem, env(safe-area-inset-left));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .badge {
+    transition: none;
+  }
+}
