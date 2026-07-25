@@ -1,10 +1,10 @@
-import type { CanvasSize } from "../../core/CanvasSize";
+import type { CanvasSize } from "../../engine/core/CanvasSize";
 import type {
   EngineContext,
   EngineModule,
   ModuleRenderContext,
-} from "../../core/EngineModule";
-import type { FrameInfo } from "../../core/FrameLoop";
+} from "../../engine/core/EngineModule";
+import type { FrameInfo } from "../../engine/core/FrameLoop";
 import shaderSource from "./triangle.wgsl?raw";
 
 export class TriangleModule implements EngineModule {

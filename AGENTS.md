@@ -28,9 +28,45 @@ Each research project should be an independent module containing its own:
 - runtime parameters
 - resource cleanup
 
+Modules are defined by the `EngineModule` contract, not by a required
+implementation style. A module may be implemented as a class, an object literal,
+or a factory function returning an `EngineModule`.
+
+Prefer the simplest form that keeps state and GPU resource ownership clear. Do
+not introduce inheritance hierarchies merely to implement a module.
+
 Do not place research-specific behavior in engine directories.
 
 Do not make one research module depend directly on another research module.
+
+---
+
+## Source Boundaries
+
+The source tree is divided by responsibility:
+
+```text
+src/
+├── engine/      # Reusable engine infrastructure
+├── modules/     # Examples and research implementations
+└── main.ts      # Active module composition only
+```
+
+Dependencies flow in one direction:
+
+```text
+main -> modules -> engine
+```
+
+Engine code must never import from `modules` or `main`.
+
+Examples and research implementations both belong in `modules`. Examples such
+as Triangle and Engine Diagnostics validate generic behavior but must not become
+hidden engine dependencies.
+
+The reusable application host belongs in `engine/application`. Root `main.ts`
+only selects and registers what runs. It must remain thin and contain no
+rendering algorithm.
 
 ---
 
@@ -161,6 +197,16 @@ Bind the development server to a non-loopback interface such as `0.0.0.0`.
 
 Use the host machine's Tailscale IP for direct access. Prefer Tailscale Serve
 HTTPS when remote WebGPU execution requires a secure context.
+
+Remote WebGPU verification requires more than binding Vite to `0.0.0.0`.
+Configure an HTTPS terminator or reverse proxy that forwards a trusted HTTPS
+hostname to the local Vite HTTP port. Add the exact forwarded hostname to
+`DEV_ALLOWED_HOSTS` in the ignored `.env.local` file so Vite accepts the proxy's
+Host header.
+
+Verify the final HTTPS URL from the remote device. The certificate hostname, the
+browser URL, and the Vite allowed host must match. Do not use a raw IP address or
+an unqualified short hostname for HTTPS verification.
 
 Do not expose the development server to the public internet unless the user
 explicitly requests it.

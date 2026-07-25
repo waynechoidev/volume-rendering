@@ -1,6 +1,5 @@
 import type { CanvasSize } from "../core/CanvasSize";
 import type { FrameInfo } from "../core/FrameLoop";
-import type { GPUTimingSupport } from "../graphics/timing/GPUTimingSupport";
 
 const UPDATE_INTERVAL_SECONDS = 0.25;
 
@@ -16,7 +15,6 @@ export class Stats {
   public constructor(
     container: HTMLElement,
     adapter: GPUAdapter,
-    timing: GPUTimingSupport,
   ) {
     this.element = document.createElement("aside");
     this.element.className = "engine-stats";
@@ -32,14 +30,7 @@ export class Stats {
     this.gpuValue = this.requireStat("gpu");
     this.canvasValue = this.requireStat("canvas");
 
-    const adapterDescription =
-      adapter.info.description ||
-      adapter.info.device ||
-      adapter.info.architecture ||
-      "WebGPU adapter";
-    this.gpuValue.textContent = `${adapterDescription} · timing ${
-      timing.supported ? "available" : "unavailable"
-    }`;
+    this.gpuValue.textContent = this.formatAdapterName(adapter.info);
   }
 
   public update(frame: FrameInfo, size: CanvasSize): void {
@@ -81,5 +72,48 @@ export class Stats {
       throw new Error(`Missing engine statistic "${name}".`);
     }
     return element;
+  }
+
+  private formatAdapterName(info: GPUAdapterInfo): string {
+    const parts = [
+      this.formatVendor(info.vendor),
+      this.capitalize(info.architecture),
+      info.device,
+      info.description,
+    ];
+    const uniqueParts: string[] = [];
+
+    for (const part of parts) {
+      const normalized = part.trim();
+      if (
+        normalized &&
+        !uniqueParts.some(
+          (existing) => existing.toLowerCase() === normalized.toLowerCase(),
+        )
+      ) {
+        uniqueParts.push(normalized);
+      }
+    }
+
+    return uniqueParts.join(" ") || "WebGPU adapter";
+  }
+
+  private formatVendor(vendor: string): string {
+    const knownVendors: Readonly<Record<string, string>> = {
+      amd: "AMD",
+      apple: "Apple",
+      intel: "Intel",
+      nvidia: "Nvidia",
+      qualcomm: "Qualcomm",
+    };
+    const normalized = vendor.trim();
+    return knownVendors[normalized.toLowerCase()] ?? normalized;
+  }
+
+  private capitalize(value: string): string {
+    const normalized = value.trim();
+    return normalized
+      ? normalized[0]!.toUpperCase() + normalized.slice(1)
+      : normalized;
   }
 }

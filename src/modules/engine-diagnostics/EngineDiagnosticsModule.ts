@@ -1,20 +1,20 @@
-import type { CanvasSize } from "../../core/CanvasSize";
+import type { CanvasSize } from "../../engine/core/CanvasSize";
 import type {
   EngineContext,
   EngineModule,
   ModuleRenderContext,
-} from "../../core/EngineModule";
-import type { FrameInfo } from "../../core/FrameLoop";
-import { createBindGroup } from "../../graphics/bind-groups/BindGroupFactory";
-import { GPUBufferResource } from "../../graphics/buffers/GPUBufferResource";
+} from "../../engine/core/EngineModule";
+import type { FrameInfo } from "../../engine/core/FrameLoop";
+import { createBindGroup } from "../../engine/graphics/bind-groups/BindGroupFactory";
+import { GPUBufferResource } from "../../engine/graphics/buffers/GPUBufferResource";
 import {
   assertShaderCompiles,
   createRenderPipeline,
-} from "../../graphics/pipelines/PipelineFactory";
+} from "../../engine/graphics/pipelines/PipelineFactory";
 import {
   createDepthTexture,
   type TextureResource,
-} from "../../graphics/textures/TextureResource";
+} from "../../engine/graphics/textures/TextureResource";
 import shaderSource from "./diagnostics.wgsl?raw";
 import {
   createCubeVertices,

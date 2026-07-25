@@ -102,13 +102,13 @@ Research modules may use engine APIs but must never modify engine architecture u
 The following directories represent engine infrastructure.
 
 ```text
-src/core
-src/graphics
-src/camera
-src/input
-src/math
-src/scene
-src/ui
+src/engine/core
+src/engine/graphics
+src/engine/camera
+src/engine/input
+src/engine/math
+src/engine/scene
+src/engine/ui
 ```
 
 These directories should remain generic.
@@ -133,9 +133,42 @@ Each module owns:
 - its data structures
 - its resource management
 
+The engine module API is a structural contract. Implementations may use classes,
+object literals, or factory functions. Engine infrastructure must not require
+inheritance or a specific construction pattern.
+
 Modules should not depend on one another.
 
 Modules communicate only through public engine APIs.
+
+---
+
+# Source Boundary Rules
+
+The source tree is divided into engine infrastructure, independent modules, and
+application composition.
+
+```text
+src/
+├── engine/
+├── modules/
+└── main.ts
+```
+
+Dependencies must flow in one direction:
+
+```text
+main -> modules -> engine
+```
+
+The engine must never import modules or application bootstrap code.
+
+Diagnostic and educational implementations such as Triangle and Engine
+Diagnostics belong in `src/modules/` alongside research implementations.
+
+The reusable application host belongs in `src/engine/application/`. Root
+`src/main.ts` selects active modules but contains no algorithm or GPU pipeline
+implementation.
 
 ---
 
@@ -428,6 +461,11 @@ The development server should listen on a non-loopback interface, such as
 
 When WebGPU requires a secure context on a remote device, prefer exposing the
 local development server through Tailscale Serve with HTTPS.
+
+The HTTPS service must terminate TLS for a trusted hostname and proxy to the
+local Vite HTTP port. Add that exact hostname to `DEV_ALLOWED_HOSTS` in the
+ignored `.env.local` file. Verify that the certificate hostname, browser URL,
+and Vite allowed host match.
 
 Do not expose the development server to the public internet. Tailscale access
 must remain private to the tailnet unless the user explicitly requests otherwise.

@@ -9,7 +9,6 @@ import { GPUContext } from "./GPUContext";
 import { CameraUniforms } from "../camera/CameraUniforms";
 import { OrbitCameraController } from "../camera/OrbitCameraController";
 import { PerspectiveCamera } from "../camera/PerspectiveCamera";
-import { getGPUTimingSupport } from "../graphics/timing/GPUTimingSupport";
 import { InputManager } from "../input/InputManager";
 import { DebugUI } from "../ui/DebugUI";
 import { Stats } from "../ui/Stats";
@@ -55,11 +54,7 @@ export class Engine {
     this.cameraUniforms = new CameraUniforms(gpu.device);
     this.orbitController = new OrbitCameraController(this.camera, this.input);
     this.debugUI = new DebugUI(uiContainer);
-    this.stats = new Stats(
-      uiContainer,
-      gpu.adapter,
-      getGPUTimingSupport(gpu.adapter),
-    );
+    this.stats = new Stats(uiContainer, gpu.adapter);
     this.context = {
       gpu: this.gpu,
       camera: this.camera,
