@@ -96,3 +96,14 @@ npm run typecheck
 npm test
 npm run build
 ```
+
+## GitHub Pages
+
+The workflow at `.github/workflows/deploy-pages.yml` tests, builds, and deploys
+the application whenever `main` is pushed. It derives the Vite base path from
+the GitHub repository name, so repositories created from this template do not
+need a hard-coded deployment path.
+
+Before the first deployment, open the repository's **Settings → Pages** and set
+**Build and deployment → Source** to **GitHub Actions**. The deployed WebGPU
+application is served over HTTPS.

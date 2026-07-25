@@ -7,6 +7,7 @@ export default defineConfig(({ mode }) => {
     .filter(Boolean);
 
   return {
+    base: environment.BASE_PATH || "/",
     server: {
       host: "0.0.0.0",
       port: 5173,
