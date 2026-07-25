@@ -1,9 +1,9 @@
 import { EngineApplication } from "./engine/application/EngineApplication";
-import { EngineDiagnosticsModule } from "./modules/engine-diagnostics/EngineDiagnosticsModule";
+import { GPUParticleModule } from "./modules/gpu-particles/GPUParticleModule";
 
 const application = new EngineApplication({
-  label: "Engine Diagnostics",
-  modules: [new EngineDiagnosticsModule()],
+  label: "GPU Particles",
+  modules: [new GPUParticleModule()],
 });
 
 void application.start();

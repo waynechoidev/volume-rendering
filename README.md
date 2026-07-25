@@ -41,6 +41,13 @@ Included modules:
 
 - `triangle`: minimal WebGPU rendering example
 - `engine-diagnostics`: camera, input, UI, statistics, and resource validation
+- `gpu-particles`: compute-driven particle simulation and instanced rendering
+
+The GPU Particle module keeps particle state in ping-pong storage buffers. A
+compute pass updates the state and the render pass consumes the new buffer
+directly, without CPU readback. Particle count changes recreate the
+size-dependent buffers; ordinary simulation parameters reuse existing GPU
+resources.
 
 ## Selecting a Module
 
