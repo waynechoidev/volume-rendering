@@ -9,25 +9,18 @@ import { GPUParticleModule } from "@/modules/gpu-particles/GPUParticleModule";
 import gpuParticlesReadme from "@/modules/gpu-particles/README.md?raw";
 import { TriangleModule } from "@/modules/triangle/TriangleModule";
 import triangleReadme from "@/modules/triangle/README.md?raw";
-import { VolumeRenderingModule } from "@/modules/volume-rendering/VolumeRenderingModule";
-import volumeRenderingReadme from "@/modules/volume-rendering/README.md?raw";
 
 const application = new EngineApplication({
   modules: [
     {
-      label: "Compute Circle",
-      module: ComputeCircleModule,
-      readme: computeCircleReadme,
-    },
-    {
-      label: "Volume Rendering",
-      module: VolumeRenderingModule,
-      readme: volumeRenderingReadme,
-    },
-    {
       label: "Triangle",
       module: TriangleModule,
       readme: triangleReadme,
+    },
+    {
+      label: "Compute Circle",
+      module: ComputeCircleModule,
+      readme: computeCircleReadme,
     },
     {
       label: "Engine Diagnostics",

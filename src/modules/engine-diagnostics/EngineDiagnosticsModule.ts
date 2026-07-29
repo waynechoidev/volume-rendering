@@ -33,7 +33,6 @@ export class EngineDiagnosticsModule extends Module {
   private gridVertexCount = 0;
 
   public async setup(): Promise<void> {
-    const { gpu, cameraUniforms } = this.context;
     const vertex = await this.compileShader(vertexShaderSource, "vertex");
     const fragmentShader = await this.compileShader(
       fragmentShaderSource,
@@ -53,7 +52,7 @@ export class EngineDiagnosticsModule extends Module {
         ],
       },
     ];
-    const cameraBindGroupLayout = gpu.device.createBindGroupLayout({
+    const cameraBindGroupLayout = this.device.createBindGroupLayout({
       label: "Diagnostics camera bind group layout",
       entries: [
         {
@@ -63,14 +62,14 @@ export class EngineDiagnosticsModule extends Module {
         },
       ],
     });
-    const pipelineLayout = gpu.device.createPipelineLayout({
+    const pipelineLayout = this.device.createPipelineLayout({
       label: "Diagnostics pipeline layout",
       bindGroupLayouts: [cameraBindGroupLayout],
     });
     const fragment: GPUFragmentState = {
       module: fragmentShader,
       entryPoint: "main",
-      targets: [{ format: gpu.presentationFormat }],
+      targets: [{ format: this.presentationFormat }],
     };
     const depthStencil: GPUDepthStencilState = {
       format: DEPTH_FORMAT,
@@ -78,7 +77,7 @@ export class EngineDiagnosticsModule extends Module {
       depthWriteEnabled: true,
     };
 
-    this.cubePipeline = await gpu.device.createRenderPipelineAsync({
+    this.cubePipeline = await this.device.createRenderPipelineAsync({
       label: "Diagnostics cube pipeline",
       layout: pipelineLayout,
       vertex: {
@@ -94,7 +93,7 @@ export class EngineDiagnosticsModule extends Module {
       },
       depthStencil,
     });
-    this.gridPipeline = await gpu.device.createRenderPipelineAsync({
+    this.gridPipeline = await this.device.createRenderPipelineAsync({
       label: "Diagnostics grid pipeline",
       layout: pipelineLayout,
       vertex: {
@@ -114,26 +113,26 @@ export class EngineDiagnosticsModule extends Module {
     const gridVertices = createGridVertices();
     this.cubeVertexCount = getVertexCount(cubeVertices);
     this.gridVertexCount = getVertexCount(gridVertices);
-    this.cubeBuffer = new GPUBufferResource(gpu.device, {
+    this.cubeBuffer = new GPUBufferResource(this.device, {
       label: "Diagnostics cube vertices",
       size: cubeVertices.byteLength,
       usage: GPUBufferUsage.VERTEX,
       initialData: cubeVertices,
     });
-    this.gridBuffer = new GPUBufferResource(gpu.device, {
+    this.gridBuffer = new GPUBufferResource(this.device, {
       label: "Diagnostics grid vertices",
       size: gridVertices.byteLength,
       usage: GPUBufferUsage.VERTEX,
       initialData: gridVertices,
     });
     this.bindGroup = createBindGroup(
-      gpu.device,
+      this.device,
       "Diagnostics camera bind group",
       cameraBindGroupLayout,
       [
         {
           binding: 0,
-          resource: { buffer: cameraUniforms.resource.buffer },
+          resource: { buffer: this.cameraUniforms.resource.buffer },
         },
       ],
     );

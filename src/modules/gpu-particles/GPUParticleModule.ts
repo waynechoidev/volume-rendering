@@ -43,7 +43,7 @@ export class GPUParticleModule
     );
     this.renderer = await ParticleRenderer.create(
       this.device,
-      this.gpu.presentationFormat,
+      this.presentationFormat,
       this.cameraUniforms.resource.buffer,
       this.simulation.parameterBuffer.buffer,
       vertex,

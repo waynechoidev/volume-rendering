@@ -33,7 +33,8 @@ the two passes; no CPU readback is performed.
 
 - `ComputeTextureModule.ts`: parameters, resources, and compute-to-screen pass order.
 - `compute-texture.compute.wgsl`: procedural storage-texture generation.
-- `../../engine/shaders/fullscreen.vertex.wgsl`: shared fullscreen triangle.
+- `../../engine/shaders/fullscreen.vertex.wgsl`: engine-cached fullscreen
+  triangle shader.
 - `compute-texture.fragment.wgsl`: computed texture presentation.
 - `dispatch.ts`: workgroup dispatch calculation.
 - `dispatch.test.ts`: dispatch-size validation.

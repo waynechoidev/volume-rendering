@@ -28,5 +28,6 @@ screens.
 
 - `ComputeCircleModule.ts`: resources and compute-to-screen pass order.
 - `compute-circle.compute.wgsl`: circle generation into a storage texture.
-- `../../engine/shaders/fullscreen.vertex.wgsl`: shared fullscreen triangle.
+- `../../engine/shaders/fullscreen.vertex.wgsl`: engine-cached fullscreen
+  triangle shader.
 - `compute-circle.fragment.wgsl`: computed texture presentation.

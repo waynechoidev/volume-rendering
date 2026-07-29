@@ -10,6 +10,7 @@ import { CameraUniforms } from "@/engine/camera/CameraUniforms";
 import { OrbitCameraController } from "@/engine/camera/OrbitCameraController";
 import { PerspectiveCamera } from "@/engine/camera/PerspectiveCamera";
 import { InputManager } from "@/engine/input/InputManager";
+import { ShaderLibrary } from "@/engine/graphics/shaders/ShaderLibrary";
 import { DebugUI } from "@/engine/ui/DebugUI";
 import { Stats } from "@/engine/ui/Stats";
 
@@ -31,6 +32,7 @@ export class Engine {
   private readonly resizeObserver: ResizeObserver;
   private readonly abortController = new AbortController();
   private readonly cameraUniforms: CameraUniforms;
+  private readonly shaders: ShaderLibrary;
   private readonly orbitController: OrbitCameraController;
   private readonly debugUI: DebugUI;
   private readonly stats: Stats;
@@ -52,11 +54,13 @@ export class Engine {
     this.camera = new PerspectiveCamera();
     this.input = new InputManager(gpu.canvas);
     this.cameraUniforms = new CameraUniforms(gpu.device);
+    this.shaders = new ShaderLibrary(gpu.device);
     this.orbitController = new OrbitCameraController(this.camera, this.input);
     this.debugUI = new DebugUI(uiContainer);
     this.stats = new Stats(uiContainer, gpu.adapter);
     this.context = {
       gpu: this.gpu,
+      shaders: this.shaders,
       camera: this.camera,
       cameraUniforms: this.cameraUniforms,
       input: this.input,

@@ -1,7 +1,6 @@
 import { UniformBuffer } from "@/engine/graphics/buffers/UniformBuffer";
 import { TextureResource } from "@/engine/graphics/textures/TextureResource";
 import { Module } from "@/engine/modules/Module";
-import fullscreenVertexSource from "@/engine/shaders/fullscreen.vertex.wgsl?raw";
 import computeShaderSource from "@/modules/compute-texture/compute-texture.compute.wgsl?raw";
 import { calculateDispatchSize } from "@/modules/compute-texture/dispatch";
 import fragmentShaderSource from "@/modules/compute-texture/compute-texture.fragment.wgsl?raw";
@@ -25,7 +24,7 @@ export class ComputeTextureModule extends Module {
 
   public async setup(): Promise<void> {
     const compute = await this.compileShader(computeShaderSource, "compute");
-    const vertex = await this.compileShader(fullscreenVertexSource, "vertex");
+    const vertex = await this.fullscreenVertexShader();
     const fragment = await this.compileShader(fragmentShaderSource, "fragment");
 
     this.uniforms = new UniformBuffer(
@@ -45,7 +44,7 @@ export class ComputeTextureModule extends Module {
       fragment: {
         module: fragment,
         entryPoint: "main",
-        targets: [{ format: this.gpu.presentationFormat }],
+        targets: [{ format: this.presentationFormat }],
       },
       primitive: { topology: "triangle-list" },
     });

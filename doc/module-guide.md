@@ -72,6 +72,11 @@ Use a CPU-side test for dispatch, packing, geometry, or state calculations.
 The parent `Module` caches shaders compiled through `this.compileShader()` and
 surfaces their diagnostics.
 
+Use `this.device` for WebGPU object creation and `this.presentationFormat` for
+canvas render targets. Do not unpack `gpu` from the engine context. Request the
+engine's compiled fullscreen vertex shader with
+`await this.fullscreenVertexShader()` instead of importing its WGSL source.
+
 ## Responsive behavior
 
 Use the physical dimensions passed to `resize`; do not read window dimensions

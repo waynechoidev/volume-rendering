@@ -123,12 +123,12 @@ export abstract class Module implements EngineModule {
     return this.engineContext;
   }
 
-  protected get gpu(): EngineContext["gpu"] {
-    return this.context.gpu;
+  protected get device(): GPUDevice {
+    return this.context.gpu.device;
   }
 
-  protected get device(): GPUDevice {
-    return this.gpu.device;
+  protected get presentationFormat(): GPUTextureFormat {
+    return this.context.gpu.presentationFormat;
   }
 
   protected get camera(): EngineContext["camera"] {
@@ -171,6 +171,10 @@ export abstract class Module implements EngineModule {
     })();
     this.shaderCache.set(source, compilation);
     return compilation;
+  }
+
+  protected fullscreenVertexShader(): Promise<GPUShaderModule> {
+    return this.context.shaders.getFullscreenVertex();
   }
 
   protected get commandEncoder(): GPUCommandEncoder {

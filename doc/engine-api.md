@@ -79,7 +79,7 @@ class MyModule extends Module {
   private pipeline!: GPURenderPipeline;
 
   async setup() {
-    const vertexShader = await this.compileShader(vertex, "vertex");
+    const vertexShader = await this.fullscreenVertexShader();
     const fragmentShader = await this.compileShader(fragment, "fragment");
 
     this.pipeline = await this.device.createRenderPipelineAsync({
@@ -102,14 +102,16 @@ class MyModule extends Module {
 
 `this.compileShader(source, label)` creates and validates a shader during `setup`,
 caches repeated source usage, and reports compilation errors with the module
-and shader labels. The base class also
-provides `this.gpu`, `this.device`, `this.camera`, `this.cameraUniforms`,
-`this.input`, `this.parameters`, and `this.stats`. During `frame`, it additionally
-provides `this.commandEncoder`, `this.colorView`, `this.size`, `this.frameInfo`,
-`this.time`, `this.deltaTime`, `this.frameIndex`, and the complete
-`this.frameContext` for passing to internal helpers. GPU resources, runtime
-parameters, and CPU-side state remain ordinary class fields; lifecycle methods
-do not return or receive module state.
+and shader labels. `this.fullscreenVertexShader()` returns the engine's
+device-specific cached fullscreen shader. The base class also provides
+`this.device`, `this.presentationFormat`, `this.camera`,
+`this.cameraUniforms`, `this.input`, `this.parameters`, and `this.stats`.
+During `frame`, it additionally provides `this.commandEncoder`,
+`this.colorView`, `this.size`, `this.frameInfo`, `this.time`,
+`this.deltaTime`, `this.frameIndex`, and the complete `this.frameContext` for
+passing to internal helpers. GPU resources, runtime parameters, and CPU-side
+state remain ordinary class fields; lifecycle methods do not return or receive
+module state.
 
 Bind groups, pass descriptors, command order, draw calls, dispatch calls, data
 uploads, resource replacement, and algorithm state remain imperative and

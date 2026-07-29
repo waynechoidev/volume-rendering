@@ -18,7 +18,7 @@ export class TriangleModule extends Module {
       fragment: {
         module: fragment,
         entryPoint: "main",
-        targets: [{ format: this.gpu.presentationFormat }],
+        targets: [{ format: this.presentationFormat }],
       },
       primitive: { topology: "triangle-list" },
     });

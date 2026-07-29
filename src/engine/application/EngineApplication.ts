@@ -148,6 +148,10 @@ export class EngineApplication {
 
     this.readmeDialog = document.createElement("dialog");
     this.readmeDialog.className = "readme-dialog";
+    this.readmeDialog.addEventListener(
+      "click",
+      this.handleReadmeBackdropClick,
+    );
     const readmeBody = document.createElement("div");
     readmeBody.className = "readme-dialog__body";
     const readmeClose = document.createElement("button");
@@ -222,6 +226,10 @@ export class EngineApplication {
     this.resetViewButton.removeEventListener("click", this.resetView);
     this.controlsButton.removeEventListener("click", this.openControls);
     this.readmeButton.removeEventListener("click", this.openReadme);
+    this.readmeDialog.removeEventListener(
+      "click",
+      this.handleReadmeBackdropClick,
+    );
     this.engine?.destroy();
     this.engine = undefined;
     this.activeModule = undefined;
@@ -270,6 +278,12 @@ export class EngineApplication {
 
   private readonly closeReadme = (): void => {
     this.readmeDialog.close();
+  };
+
+  private readonly handleReadmeBackdropClick = (event: MouseEvent): void => {
+    if (event.target === this.readmeDialog) {
+      this.readmeDialog.close();
+    }
   };
 
   private async switchModule(index: number): Promise<void> {
