@@ -2,11 +2,29 @@
 
 ## Purpose
 
-This repository provides a reusable WebGPU engine for graphics, GPU-compute, and
-neural-rendering research.
+This repository provides a reusable, general-purpose WebGPU engine for graphics
+and GPU-compute research.
 
 Agents should help the user build research experiments on top of the engine
 without coupling the engine to a particular algorithm.
+
+---
+
+## Derived Project Documentation
+
+When this template is used to create a separate research repository, replace
+the root `README.md` with documentation for that project. Do not retain the
+engine repository README as the project's main description.
+
+The project README should explain the project's goal, method, controls,
+parameters, execution instructions, and current limitations. Include only a
+short engine attribution that links to
+`https://github.com/waynechoidev/webgpu-research-engine` and states that the
+derived repository contains a development-time snapshot of the engine. Record
+the source tag or commit when it is known, and do not imply that the copied
+engine automatically tracks upstream changes.
+
+Follow `doc/template-project.md` for the expected README structure.
 
 ---
 

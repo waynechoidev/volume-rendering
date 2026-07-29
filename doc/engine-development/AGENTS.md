@@ -8,7 +8,8 @@ All implementations must follow these rules unless explicitly instructed otherwi
 
 The objective is to build a reusable **WebGPU Research Engine**, not a single rendering demo.
 
-The engine should become a long-term foundation for graphics, GPU computing, and neural rendering research.
+The engine should become a long-term, general-purpose foundation for graphics
+and GPU-compute research.
 
 ---
 

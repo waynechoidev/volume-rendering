@@ -1,7 +1,9 @@
 # WebGPU Research Engine
 
-A browser-first, compute-first WebGPU engine for graphics, GPU computing, and
-neural-rendering research.
+A browser-first, compute-first engine for general-purpose WebGPU research and
+experimentation.
+
+[Open the live sample](https://waynechoidev.github.io/webgpu-research-engine/)
 
 ## Getting Started
 
@@ -88,6 +90,8 @@ runtime parameters, and cleanup.
 - [Engine API](doc/engine-api.md)
 - [Research module guide](doc/module-guide.md)
 - [Development and validation](doc/development.md)
+- [GitHub Pages deployment](doc/github-pages.md)
+- [Template project documentation](doc/template-project.md)
 
 ## Verification
 
@@ -104,6 +108,5 @@ the application whenever `main` is pushed. It derives the Vite base path from
 the GitHub repository name, so repositories created from this template do not
 need a hard-coded deployment path.
 
-Before the first deployment, open the repository's **Settings → Pages** and set
-**Build and deployment → Source** to **GitHub Actions**. The deployed WebGPU
-application is served over HTTPS.
+See [GitHub Pages deployment](doc/github-pages.md) for the required repository
+settings and deployment procedure.
