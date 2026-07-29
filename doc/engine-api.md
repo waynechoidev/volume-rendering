@@ -4,6 +4,22 @@ The engine exposes a deliberately small API to research modules. Application
 composition imports modules; modules import only public engine types and
 utilities.
 
+## Application composition
+
+`EngineApplication` accepts an optional `repositoryUrl`. When provided, the
+module toolbar displays a GitHub button immediately after the README button and
+opens the configured repository in a new tab.
+
+```ts
+const application = new EngineApplication({
+  repositoryUrl: "https://github.com/owner/research-project",
+  modules,
+});
+```
+
+Set this to the current repository, not automatically to the engine repository.
+The option may be omitted when the application has no public source URL.
+
 ## Module lifecycle
 
 An `EngineModule` implements:

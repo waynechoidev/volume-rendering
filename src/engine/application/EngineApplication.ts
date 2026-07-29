@@ -32,6 +32,7 @@ export interface ModuleCatalogEntry {
 export interface EngineApplicationOptions {
   readonly modules: readonly ModuleCatalogEntry[];
   readonly maxPixelRatio?: number;
+  readonly repositoryUrl?: string;
   readonly root?: HTMLElement;
 }
 
@@ -60,6 +61,7 @@ export class EngineApplication {
   public constructor({
     modules,
     maxPixelRatio = 2,
+    repositoryUrl,
     root = EngineApplication.requireRoot(),
   }: EngineApplicationOptions) {
     if (modules.length === 0) {
@@ -146,6 +148,10 @@ export class EngineApplication {
     this.readmeButton.textContent = "README";
     this.readmeButton.addEventListener("click", this.openReadme);
 
+    const repositoryLink = repositoryUrl
+      ? EngineApplication.createRepositoryLink(repositoryUrl)
+      : undefined;
+
     this.readmeDialog = document.createElement("dialog");
     this.readmeDialog.className = "readme-dialog";
     this.readmeDialog.addEventListener(
@@ -165,11 +171,11 @@ export class EngineApplication {
     readmeBody.append(readmeClose, this.readmeContent);
     this.readmeDialog.append(readmeBody);
 
-    this.modulePicker.append(
-      this.moduleSelect,
-      this.readmeButton,
-      this.modulePickerToggle,
-    );
+    this.modulePicker.append(this.moduleSelect, this.readmeButton);
+    if (repositoryLink) {
+      this.modulePicker.append(repositoryLink);
+    }
+    this.modulePicker.append(this.modulePickerToggle);
     this.root.replaceChildren(
       this.canvas,
       this.status,
@@ -345,5 +351,21 @@ export class EngineApplication {
       throw new Error('The application shell is missing "#app".');
     }
     return root;
+  }
+
+  private static createRepositoryLink(repositoryUrl: string): HTMLAnchorElement {
+    const link = document.createElement("a");
+    link.className = "application-button repository-link";
+    link.href = repositoryUrl;
+    link.target = "_blank";
+    link.rel = "noopener noreferrer";
+    link.setAttribute("aria-label", "Open project repository on GitHub");
+    link.title = "GitHub repository";
+    link.innerHTML = `
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M12 2.75a9.25 9.25 0 0 0-2.92 18.03c.46.08.63-.2.63-.45v-1.79c-2.57.56-3.11-1.09-3.11-1.09-.42-1.07-1.03-1.35-1.03-1.35-.84-.58.06-.57.06-.57.93.07 1.42.96 1.42.96.83 1.42 2.17 1.01 2.7.77.08-.6.32-1.01.59-1.24-2.05-.23-4.21-1.03-4.21-4.57 0-1.01.36-1.84.95-2.49-.1-.23-.41-1.18.09-2.45 0 0 .78-.25 2.54.95A8.8 8.8 0 0 1 12 7.1a8.8 8.8 0 0 1 2.31.31c1.76-1.2 2.54-.95 2.54-.95.5 1.27.19 2.22.09 2.45.59.65.95 1.48.95 2.49 0 3.55-2.16 4.33-4.22 4.56.33.29.63.85.63 1.72v2.65c0 .25.17.54.64.45A9.25 9.25 0 0 0 12 2.75Z" />
+      </svg>
+    `;
+    return link;
   }
 }

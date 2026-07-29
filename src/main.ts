@@ -11,6 +11,7 @@ import { TriangleModule } from "@/modules/triangle/TriangleModule";
 import triangleReadme from "@/modules/triangle/README.md?raw";
 
 const application = new EngineApplication({
+  repositoryUrl: "https://github.com/waynechoidev/webgpu-research-engine",
   modules: [
     {
       label: "Triangle",

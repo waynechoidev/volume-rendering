@@ -25,6 +25,24 @@ Do not copy the engine feature list, included sample list, or engine-development
 instructions into the project README unless they are directly relevant to that
 project.
 
+## Repository button
+
+Set `repositoryUrl` in `src/main.ts` to the derived project's own repository:
+
+```ts
+const application = new EngineApplication({
+  repositoryUrl: "https://github.com/<account>/<project>",
+  modules: [
+    // Project modules
+  ],
+});
+```
+
+This URL controls the GitHub button displayed to the right of the README button.
+Do not leave it pointing to WebGPU Research Engine after creating a derived
+project. The engine source belongs in the small attribution section described
+below; the runtime button should take users to the project they are viewing.
+
 ## Engine attribution
 
 Keep the engine attribution short and subordinate to the project description.

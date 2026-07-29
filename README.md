@@ -65,6 +65,7 @@ explicit `modules` list:
 
 ```ts
 const application = new EngineApplication({
+  repositoryUrl: "https://github.com/owner/research-project",
   modules: [
     {
       label: "Engine Diagnostics",

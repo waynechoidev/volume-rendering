@@ -26,6 +26,11 @@ engine automatically tracks upstream changes.
 
 Follow `doc/template-project.md` for the expected README structure.
 
+Set the `EngineApplication.repositoryUrl` option in `src/main.ts` to the derived
+project's own GitHub repository. The toolbar GitHub button represents the
+currently running project; do not leave it pointing to the engine repository.
+Keep the upstream engine link in the README attribution instead.
+
 ---
 
 ## Default Working Area
