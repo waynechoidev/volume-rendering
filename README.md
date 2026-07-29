@@ -70,7 +70,10 @@ const application = new EngineApplication({
     {
       label: "Engine Diagnostics",
       module: EngineDiagnosticsModule,
-      readme: engineDiagnosticsReadme,
+      readme: {
+        en: engineDiagnosticsReadme,
+        ko: engineDiagnosticsReadmeKo,
+      },
     },
   ],
 });
@@ -82,6 +85,9 @@ Selection does not modify the page URL; reloading starts the first `modules`
 entry. Shared desktop and touch controls are available through the controls icon
 in the statistics panel. When a module supplies Markdown through `readme`, its
 separate `README` button opens a responsive viewer with KaTeX math rendering.
+Localized README entries can contain multiple language-code keys and be
+switched inside the viewer. This repository currently provides English and
+Korean module documentation.
 
 Each module owns its shaders, pipelines, algorithm-specific data, GPU resources,
 runtime parameters, and cleanup.

@@ -50,12 +50,39 @@ module in the runtime picker:
 {
   label: "My Module",
   module: MyModule,
-  readme: myModuleReadme,
+  readme: {
+    en: myModuleReadme,
+    ko: myModuleReadmeKo,
+  },
 },
 ```
 
-The `readme` field is optional. When present, the application renders its
-Markdown and LaTeX-style `\(...\)` / `\[...\]` formulas in the README overlay.
+The `readme` field is optional. A plain Markdown string remains supported for
+single-language modules. A localized object accepts arbitrary language-code
+keys and requires English as its fallback. This repository currently maintains
+only Korean in addition to English:
+
+```ts
+import readmeEn from "@/modules/my-module/README.md?raw";
+import readmeKo from "@/modules/my-module/README.ko.md?raw";
+
+readme: { en: readmeEn, ko: readmeKo }
+```
+
+Additional languages follow the `README.<language>.md` convention and can be
+registered with another key:
+
+```ts
+readme: { en: readmeEn, ko: readmeKo, ja: readmeJa }
+```
+
+When multiple languages are present, the README overlay displays the next
+language code, such as `KO`, and cycles through the available documents. It
+initially uses the browser's primary language when available, falls back to
+English, and preserves the selection while switching modules. Markdown and
+LaTeX-style `\(...\)` / `\[...\]` formulas are rendered in every language.
+Keep localized documents technically synchronized. Keep their main title in
+English and write established graphics and API terminology in English.
 
 ## TypeScript and WGSL contract
 

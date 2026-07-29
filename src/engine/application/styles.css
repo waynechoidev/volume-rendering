@@ -201,6 +201,7 @@ body {
 }
 
 .application-button,
+.readme-dialog__language,
 .readme-dialog__close {
   padding: 0.45rem 0.7rem;
   border: 1px solid rgb(255 255 255 / 12%);
@@ -318,12 +319,18 @@ body {
   overflow: auto;
 }
 
-.readme-dialog__close {
+.readme-dialog__actions {
   position: sticky;
   z-index: 2;
   top: 0.75rem;
   float: right;
   margin: 0.75rem 0.75rem 0 0;
+  display: flex;
+  gap: 0.4rem;
+}
+
+.readme-dialog__language,
+.readme-dialog__close {
   font-size: 0.72rem;
 }
 

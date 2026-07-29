@@ -102,6 +102,15 @@ entry is the default module.
 Switching modules must destroy the previous module and its owned resources
 before activating the next one.
 
+The README viewer supports multiple languages through language-code keys.
+English `README.md` is the required base document. This repository currently
+maintains Korean as its only additional language in `README.ko.md`; do not add
+other translations unless the user requests them. Register every available
+document through the localized readme object and keep formulas, code examples,
+and technical coverage synchronized. Keep the main document title in English
+in every language version, and retain established graphics and API terms in
+English rather than spelling their pronunciation in Hangul.
+
 ---
 
 ## Use the Engine

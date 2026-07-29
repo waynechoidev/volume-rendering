@@ -19,6 +19,15 @@ const COMMON_CONTROLS = `# Controls
 - Two-finger drag: move the camera target.
 `;
 
+export type ReadmeLanguage = string;
+
+export interface LocalizedReadme {
+  readonly en: string;
+  readonly [language: string]: string | undefined;
+}
+
+export type ReadmeSource = string | LocalizedReadme;
+
 export interface EngineModuleConstructor {
   new (): EngineModule;
 }
@@ -26,7 +35,7 @@ export interface EngineModuleConstructor {
 export interface ModuleCatalogEntry {
   readonly label: string;
   readonly module: EngineModuleConstructor;
-  readonly readme?: string;
+  readonly readme?: ReadmeSource;
 }
 
 export interface EngineApplicationOptions {
@@ -51,10 +60,14 @@ export class EngineApplication {
   private readonly controlsButton: HTMLButtonElement;
   private readonly readmeButton: HTMLButtonElement;
   private readonly readmeDialog: HTMLDialogElement;
+  private readonly readmeLanguageButton: HTMLButtonElement;
+  private readonly readmeCloseButton: HTMLButtonElement;
   private readonly readmeContent: HTMLElement;
 
   private engine: Engine | undefined;
   private activeModule: EngineModule | undefined;
+  private activeReadme: ReadmeSource | undefined;
+  private readmeLanguage: ReadmeLanguage;
   private destroyed = false;
   private switchVersion = 0;
 
@@ -70,6 +83,8 @@ export class EngineApplication {
 
     this.modules = modules;
     this.maxPixelRatio = maxPixelRatio;
+    this.readmeLanguage =
+      navigator.language.toLowerCase().split("-")[0] || "en";
     this.root = root;
     this.root.classList.add("engine-application");
     this.root.setAttribute("aria-label", "WebGPU Research Engine");
@@ -160,15 +175,26 @@ export class EngineApplication {
     );
     const readmeBody = document.createElement("div");
     readmeBody.className = "readme-dialog__body";
-    const readmeClose = document.createElement("button");
-    readmeClose.className = "readme-dialog__close";
-    readmeClose.type = "button";
-    readmeClose.setAttribute("aria-label", "Close README");
-    readmeClose.textContent = "Close";
-    readmeClose.addEventListener("click", this.closeReadme);
+    const readmeActions = document.createElement("div");
+    readmeActions.className = "readme-dialog__actions";
+    this.readmeLanguageButton = document.createElement("button");
+    this.readmeLanguageButton.className = "readme-dialog__language";
+    this.readmeLanguageButton.type = "button";
+    this.readmeLanguageButton.addEventListener(
+      "click",
+      this.toggleReadmeLanguage,
+    );
+    this.readmeCloseButton = document.createElement("button");
+    this.readmeCloseButton.className = "readme-dialog__close";
+    this.readmeCloseButton.type = "button";
+    this.readmeCloseButton.addEventListener("click", this.closeReadme);
+    readmeActions.append(
+      this.readmeLanguageButton,
+      this.readmeCloseButton,
+    );
     this.readmeContent = document.createElement("article");
     this.readmeContent.className = "readme-content";
-    readmeBody.append(readmeClose, this.readmeContent);
+    readmeBody.append(readmeActions, this.readmeContent);
     this.readmeDialog.append(readmeBody);
 
     this.modulePicker.append(this.moduleSelect, this.readmeButton);
@@ -232,6 +258,11 @@ export class EngineApplication {
     this.resetViewButton.removeEventListener("click", this.resetView);
     this.controlsButton.removeEventListener("click", this.openControls);
     this.readmeButton.removeEventListener("click", this.openReadme);
+    this.readmeLanguageButton.removeEventListener(
+      "click",
+      this.toggleReadmeLanguage,
+    );
+    this.readmeCloseButton.removeEventListener("click", this.closeReadme);
     this.readmeDialog.removeEventListener(
       "click",
       this.handleReadmeBackdropClick,
@@ -271,16 +302,67 @@ export class EngineApplication {
   };
 
   private readonly openControls = (): void => {
-    this.readmeContent.innerHTML = renderReadme(COMMON_CONTROLS);
+    this.activeReadme = COMMON_CONTROLS;
+    this.renderActiveReadme();
     this.readmeDialog.showModal();
   };
 
   private readonly openReadme = (): void => {
     const entry = this.modules[this.moduleSelect.selectedIndex];
     if (!entry?.readme) return;
-    this.readmeContent.innerHTML = renderReadme(entry.readme);
+    this.activeReadme = entry.readme;
+    this.renderActiveReadme();
     this.readmeDialog.showModal();
   };
+
+  private readonly toggleReadmeLanguage = (): void => {
+    const source = this.activeReadme;
+    if (!source || typeof source === "string") {
+      return;
+    }
+
+    const languages = EngineApplication.readmeLanguages(source);
+    const currentLanguage = languages.includes(this.readmeLanguage)
+      ? this.readmeLanguage
+      : "en";
+    const currentIndex = languages.indexOf(currentLanguage);
+    this.readmeLanguage =
+      languages[(currentIndex + 1) % languages.length] ?? "en";
+    this.renderActiveReadme();
+  };
+
+  private renderActiveReadme(): void {
+    const source = this.activeReadme;
+    if (!source) {
+      return;
+    }
+
+    const localized: LocalizedReadme =
+      typeof source === "string" ? { en: source } : source;
+    const languages = EngineApplication.readmeLanguages(localized);
+    const language = languages.includes(this.readmeLanguage)
+      ? this.readmeLanguage
+      : "en";
+    const currentIndex = languages.indexOf(language);
+    const nextLanguage =
+      languages[(currentIndex + 1) % languages.length] ?? "en";
+    const markdown = localized[language] ?? localized.en;
+
+    this.readmeLanguageButton.hidden = languages.length < 2;
+    this.readmeLanguageButton.textContent = nextLanguage.toUpperCase();
+    this.readmeLanguageButton.setAttribute(
+      "aria-label",
+      `View README in ${nextLanguage.toUpperCase()}`,
+    );
+    this.readmeCloseButton.textContent =
+      language === "ko" ? "닫기" : "Close";
+    this.readmeCloseButton.setAttribute(
+      "aria-label",
+      language === "ko" ? "README 닫기" : "Close README",
+    );
+    this.readmeContent.lang = language;
+    this.readmeContent.innerHTML = renderReadme(markdown);
+  }
 
   private readonly closeReadme = (): void => {
     this.readmeDialog.close();
@@ -367,5 +449,17 @@ export class EngineApplication {
       </svg>
     `;
     return link;
+  }
+
+  private static readmeLanguages(readme: LocalizedReadme): string[] {
+    const languages = Object.entries(readme)
+      .filter((entry): entry is [string, string] => {
+        return typeof entry[1] === "string" && entry[1].length > 0;
+      })
+      .map(([language]) => language);
+
+    return languages.includes("en")
+      ? ["en", ...languages.filter((language) => language !== "en")]
+      : languages;
   }
 }

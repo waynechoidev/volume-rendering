@@ -20,6 +20,28 @@ const application = new EngineApplication({
 Set this to the current repository, not automatically to the engine repository.
 The option may be omitted when the application has no public source URL.
 
+Each `ModuleCatalogEntry` may provide either a single Markdown string or a
+localized README keyed by language code:
+
+```ts
+{
+  label: "My Module",
+  module: MyModule,
+  readme: {
+    en: readmeEn,
+    ko: readmeKo,
+  },
+}
+```
+
+English is the required fallback, while keys such as `ko`, `ja`, or `fr` may
+be added independently. The application uses the browser's primary language
+when that document exists and otherwise falls back to English. The README
+overlay shows a language-code button only when multiple documents exist,
+cycles through all registered languages, and preserves the selection across
+module changes. This repository currently supplies Korean as its only
+additional language. Engine-level controls documentation remains English-only.
+
 ## Module lifecycle
 
 An `EngineModule` implements:
