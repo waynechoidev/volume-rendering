@@ -7,9 +7,8 @@
     "types": ["@webgpu/types", "vite/client"],
     "skipLibCheck": true,
     "moduleResolution": "Bundler",
-    "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["./src/*"]
     },
     "allowImportingTsExtensions": false,
     "isolatedModules": true,

@@ -1,224 +1,125 @@
-import type { CanvasSize } from "@/engine/core/CanvasSize";
-import type {
-  EngineContext,
-  EngineModule,
-  ModuleRenderContext,
-} from "@/engine/core/EngineModule";
-import type { FrameInfo } from "@/engine/core/FrameLoop";
 import { UniformBuffer } from "@/engine/graphics/buffers/UniformBuffer";
-import {
-  assertShaderCompiles,
-  createComputePipeline,
-  createRenderPipeline,
-} from "@/engine/graphics/pipelines/PipelineFactory";
 import { TextureResource } from "@/engine/graphics/textures/TextureResource";
+import { Module } from "@/engine/modules/Module";
+import fullscreenVertexSource from "@/engine/shaders/fullscreen.vertex.wgsl?raw";
 import computeShaderSource from "@/modules/compute-texture/compute-texture.compute.wgsl?raw";
+import { calculateDispatchSize } from "@/modules/compute-texture/dispatch";
 import fragmentShaderSource from "@/modules/compute-texture/compute-texture.fragment.wgsl?raw";
-import vertexShaderSource from "@/modules/compute-texture/compute-texture.vertex.wgsl?raw";
-import {
-  calculateDispatchSize,
-  type DispatchSize,
-} from "@/modules/compute-texture/dispatch";
 
 const OUTPUT_FORMAT: GPUTextureFormat = "rgba8unorm";
 const PARAMETER_BYTES = 32;
 
-export class ComputeTextureModule implements EngineModule {
+export class ComputeTextureModule extends Module {
   public readonly name = "Compute Texture";
-
   public scale = 2.2;
   public speed = 0.65;
   public contrast = 0.72;
 
-  private device: GPUDevice | undefined;
-  private parameters: EngineContext["parameters"] | undefined;
-  private parameterBuffer: UniformBuffer | undefined;
-  private computePipeline: GPUComputePipeline | undefined;
-  private renderPipeline: GPURenderPipeline | undefined;
-  private outputTexture: TextureResource | undefined;
-  private computeBindGroup: GPUBindGroup | undefined;
-  private renderBindGroup: GPUBindGroup | undefined;
-  private dispatchSize: DispatchSize | undefined;
-  private size: CanvasSize | undefined;
+  private uniforms!: UniformBuffer;
+  private output: TextureResource | undefined;
+  private computePipeline!: GPUComputePipeline;
+  private renderPipeline!: GPURenderPipeline;
+  private computeBindGroup!: GPUBindGroup;
+  private renderBindGroup!: GPUBindGroup;
   private readonly parameterStorage = new ArrayBuffer(PARAMETER_BYTES);
-  private readonly parameterFloats = new Float32Array(this.parameterStorage);
-  private readonly parameterIntegers = new Uint32Array(this.parameterStorage);
 
-  public async initialize(context: EngineContext): Promise<void> {
-    const { gpu } = context;
-    this.device = gpu.device;
-    this.parameters = context.parameters;
-    this.parameterBuffer = new UniformBuffer(
-      gpu.device,
+  public async setup(): Promise<void> {
+    const compute = await this.compileShader(computeShaderSource, "compute");
+    const vertex = await this.compileShader(fullscreenVertexSource, "vertex");
+    const fragment = await this.compileShader(fragmentShaderSource, "fragment");
+
+    this.uniforms = new UniformBuffer(
+      this.device,
       "Compute texture parameters",
       PARAMETER_BYTES,
     );
-
-    const compute = gpu.device.createShaderModule({
-      label: "Compute texture compute shader",
-      code: computeShaderSource,
-    });
-    const vertex = gpu.device.createShaderModule({
-      label: "Compute texture vertex shader",
-      code: vertexShaderSource,
-    });
-    const fragment = gpu.device.createShaderModule({
-      label: "Compute texture fragment shader",
-      code: fragmentShaderSource,
-    });
-    await assertShaderCompiles(compute, "Compute texture compute shader");
-    await assertShaderCompiles(vertex, "Compute texture vertex shader");
-    await assertShaderCompiles(fragment, "Compute texture fragment shader");
-    this.computePipeline = await createComputePipeline(gpu.device, {
+    this.computePipeline = await this.device.createComputePipelineAsync({
       label: "Compute texture compute pipeline",
       layout: "auto",
       compute: { module: compute, entryPoint: "main" },
     });
-    this.renderPipeline = await createRenderPipeline(gpu.device, {
+    this.renderPipeline = await this.device.createRenderPipelineAsync({
       label: "Compute texture render pipeline",
       layout: "auto",
       vertex: { module: vertex, entryPoint: "main" },
       fragment: {
         module: fragment,
         entryPoint: "main",
-        targets: [{ format: gpu.presentationFormat }],
+        targets: [{ format: this.gpu.presentationFormat }],
       },
       primitive: { topology: "triangle-list" },
     });
 
-    const folder = context.parameters.register(this.name);
+    const folder = this.parameters.register(this.name);
     folder.add(this, "scale", 0.5, 6, 0.05).name("Pattern scale");
     folder.add(this, "speed", 0, 2, 0.05).name("Animation speed");
     folder.add(this, "contrast", 0.1, 1.5, 0.05).name("Contrast");
-    if (window.matchMedia("(max-width: 700px)").matches) {
-      folder.close();
-    }
+    if (window.matchMedia("(max-width: 700px)").matches) folder.close();
   }
 
-  public update(frame: FrameInfo): void {
-    if (!this.size || !this.parameterBuffer) {
-      return;
-    }
-
-    this.parameterIntegers[0] = this.size.width;
-    this.parameterIntegers[1] = this.size.height;
-    this.parameterFloats[2] = frame.time;
-    this.parameterFloats[3] = this.scale;
-    this.parameterFloats[4] = this.speed;
-    this.parameterFloats[5] = this.contrast;
-    this.parameterBuffer.write(this.parameterFloats);
-  }
-
-  public resize(size: CanvasSize): void {
-    if (
-      this.size?.width === size.width &&
-      this.size.height === size.height
-    ) {
-      this.size = size;
-      return;
-    }
-    this.size = size;
-    this.recreateOutputTexture();
-  }
-
-  public render({
-    commandEncoder,
-    colorView,
-  }: ModuleRenderContext): void {
-    if (
-      !this.computePipeline ||
-      !this.renderPipeline ||
-      !this.computeBindGroup ||
-      !this.renderBindGroup ||
-      !this.dispatchSize
-    ) {
-      throw new Error("Compute Texture rendered before initialization.");
-    }
-
-    const computePass = commandEncoder.beginComputePass({
-      label: "Compute texture pass",
-    });
-    computePass.setPipeline(this.computePipeline);
-    computePass.setBindGroup(0, this.computeBindGroup);
-    computePass.dispatchWorkgroups(this.dispatchSize.x, this.dispatchSize.y);
-    computePass.end();
-
-    const renderPass = commandEncoder.beginRenderPass({
-      label: "Compute texture fullscreen pass",
-      colorAttachments: [
-        {
-          view: colorView,
-          clearValue: { r: 0, g: 0, b: 0, a: 1 },
-          loadOp: "clear",
-          storeOp: "store",
-        },
-      ],
-    });
-    renderPass.setPipeline(this.renderPipeline);
-    renderPass.setBindGroup(0, this.renderBindGroup);
-    renderPass.draw(3);
-    renderPass.end();
-  }
-
-  public destroy(): void {
-    this.parameters?.remove(this.name);
-    this.outputTexture?.destroy();
-    this.parameterBuffer?.destroy();
-    this.outputTexture = undefined;
-    this.parameterBuffer = undefined;
-    this.computeBindGroup = undefined;
-    this.renderBindGroup = undefined;
-    this.computePipeline = undefined;
-    this.renderPipeline = undefined;
-    this.dispatchSize = undefined;
-    this.size = undefined;
-    this.parameters = undefined;
-    this.device = undefined;
-  }
-
-  private recreateOutputTexture(): void {
-    if (
-      !this.device ||
-      !this.parameterBuffer ||
-      !this.computePipeline ||
-      !this.renderPipeline ||
-      !this.size
-    ) {
-      return;
-    }
-
-    const nextTexture = new TextureResource(this.device, {
+  public resizeResources(): void {
+    const output = new TextureResource(this.device, {
       label: "Compute texture output",
-      size: { width: this.size.width, height: this.size.height },
+      size: this.size,
       format: OUTPUT_FORMAT,
       usage:
         GPUTextureUsage.STORAGE_BINDING |
         GPUTextureUsage.TEXTURE_BINDING,
     });
-    const nextComputeBindGroup = this.device.createBindGroup({
+    this.computeBindGroup = this.device.createBindGroup({
       label: "Compute texture compute bind group",
       layout: this.computePipeline.getBindGroupLayout(0),
       entries: [
-        { binding: 0, resource: nextTexture.view },
-        {
-          binding: 1,
-          resource: { buffer: this.parameterBuffer.buffer },
-        },
+        { binding: 0, resource: output.view },
+        { binding: 1, resource: { buffer: this.uniforms.buffer } },
       ],
     });
-    const nextRenderBindGroup = this.device.createBindGroup({
+    this.renderBindGroup = this.device.createBindGroup({
       label: "Compute texture render bind group",
       layout: this.renderPipeline.getBindGroupLayout(0),
-      entries: [{ binding: 0, resource: nextTexture.view }],
+      entries: [{ binding: 0, resource: output.view }],
     });
+    this.output?.destroy();
+    this.output = output;
+  }
 
-    this.outputTexture?.destroy();
-    this.outputTexture = nextTexture;
-    this.computeBindGroup = nextComputeBindGroup;
-    this.renderBindGroup = nextRenderBindGroup;
-    this.dispatchSize = calculateDispatchSize(
-      this.size.width,
-      this.size.height,
-    );
+  public frame(): void {
+    const floats = new Float32Array(this.parameterStorage);
+    const integers = new Uint32Array(this.parameterStorage);
+    integers[0] = this.size.width;
+    integers[1] = this.size.height;
+    floats[2] = this.time;
+    floats[3] = this.scale;
+    floats[4] = this.speed;
+    floats[5] = this.contrast;
+    this.uniforms.write(floats);
+
+    const dispatch = calculateDispatchSize(this.size.width, this.size.height);
+    const compute = this.commandEncoder.beginComputePass({
+      label: "Compute texture pass",
+    });
+    compute.setPipeline(this.computePipeline);
+    compute.setBindGroup(0, this.computeBindGroup);
+    compute.dispatchWorkgroups(dispatch.x, dispatch.y);
+    compute.end();
+
+    const render = this.commandEncoder.beginRenderPass({
+      label: "Compute texture fullscreen pass",
+      colorAttachments: [{
+        view: this.colorView,
+        clearValue: { r: 0, g: 0, b: 0, a: 1 },
+        loadOp: "clear",
+        storeOp: "store",
+      }],
+    });
+    render.setPipeline(this.renderPipeline);
+    render.setBindGroup(0, this.renderBindGroup);
+    render.draw(3);
+    render.end();
+  }
+
+  public teardown(): void {
+    this.output?.destroy();
+    this.uniforms?.destroy();
   }
 }

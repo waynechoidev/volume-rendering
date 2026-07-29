@@ -1,58 +1,36 @@
-import type {
-  EngineContext,
-  EngineModule,
-  ModuleRenderContext,
-} from "@/engine/core/EngineModule";
-import {
-  assertShaderCompiles,
-  createRenderPipeline,
-} from "@/engine/graphics/pipelines/PipelineFactory";
+import { Module } from "@/engine/modules/Module";
 import fragmentShaderSource from "@/modules/triangle/triangle.fragment.wgsl?raw";
 import vertexShaderSource from "@/modules/triangle/triangle.vertex.wgsl?raw";
 
-export class TriangleModule implements EngineModule {
+export class TriangleModule extends Module {
   public readonly name = "Triangle";
 
-  private pipeline: GPURenderPipeline | undefined;
+  private pipeline!: GPURenderPipeline;
 
-  public async initialize({ gpu }: EngineContext): Promise<void> {
-    const vertex = gpu.device.createShaderModule({
-      label: "Triangle vertex shader",
-      code: vertexShaderSource,
-    });
-    const fragment = gpu.device.createShaderModule({
-      label: "Triangle fragment shader",
-      code: fragmentShaderSource,
-    });
-    await assertShaderCompiles(vertex, "Triangle vertex shader");
-    await assertShaderCompiles(fragment, "Triangle fragment shader");
-    this.pipeline = await createRenderPipeline(gpu.device, {
+  public async setup(): Promise<void> {
+    const vertex = await this.compileShader(vertexShaderSource, "vertex");
+    const fragment = await this.compileShader(fragmentShaderSource, "fragment");
+
+    this.pipeline = await this.device.createRenderPipelineAsync({
       label: "Triangle render pipeline",
       layout: "auto",
       vertex: { module: vertex, entryPoint: "main" },
       fragment: {
         module: fragment,
         entryPoint: "main",
-        targets: [{ format: gpu.presentationFormat }],
+        targets: [{ format: this.gpu.presentationFormat }],
       },
       primitive: { topology: "triangle-list" },
     });
   }
 
-  public render({
-    commandEncoder,
-    colorView,
-  }: ModuleRenderContext): void {
-    if (!this.pipeline) {
-      throw new Error("Triangle rendered before initialization.");
-    }
-
-    const pass = commandEncoder.beginRenderPass({
+  public frame(): void {
+    const pass = this.commandEncoder.beginRenderPass({
       label: "Triangle render pass",
       colorAttachments: [
         {
-          view: colorView,
-          clearValue: { r: 0.018, g: 0.027, b: 0.055, a: 1 },
+          view: this.colorView,
+          clearValue: { r: 0.01, g: 0.015, b: 0.03, a: 1 },
           loadOp: "clear",
           storeOp: "store",
         },

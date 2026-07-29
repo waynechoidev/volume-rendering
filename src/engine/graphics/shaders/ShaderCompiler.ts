@@ -1,17 +1,3 @@
-export async function createRenderPipeline(
-  device: GPUDevice,
-  descriptor: GPURenderPipelineDescriptor,
-): Promise<GPURenderPipeline> {
-  return device.createRenderPipelineAsync(descriptor);
-}
-
-export async function createComputePipeline(
-  device: GPUDevice,
-  descriptor: GPUComputePipelineDescriptor,
-): Promise<GPUComputePipeline> {
-  return device.createComputePipelineAsync(descriptor);
-}
-
 export async function assertShaderCompiles(
   shaderModule: GPUShaderModule,
   label: string,

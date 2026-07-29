@@ -210,7 +210,7 @@ fragment workload.
 ## Files
 
 - `VolumeRenderingModule.ts`: parameters, volume resources, and screen-pass relationship.
-- `volume.vertex.wgsl`: fullscreen vertex stage.
+- `../../engine/shaders/fullscreen.vertex.wgsl`: shared fullscreen vertex stage.
 - `volume.fragment.wgsl`: bindings, density sampling, lighting, and volume integration.
 - `volume-data.ts`: deterministic CPU-side density generation.
 - `volume-data.test.ts`: density layout and determinism tests.

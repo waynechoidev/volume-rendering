@@ -3,11 +3,6 @@ import { createBindGroup } from "@/engine/graphics/bind-groups/BindGroupFactory"
 import { GPUBufferResource } from "@/engine/graphics/buffers/GPUBufferResource";
 import { UniformBuffer } from "@/engine/graphics/buffers/UniformBuffer";
 import {
-  assertShaderCompiles,
-  createComputePipeline,
-} from "@/engine/graphics/pipelines/PipelineFactory";
-import computeShaderSource from "@/modules/gpu-particles/particle.compute.wgsl?raw";
-import {
   createInitialParticles,
   PARTICLE_STRIDE,
 } from "@/modules/gpu-particles/particle-data";
@@ -54,13 +49,10 @@ export class ParticleSimulation {
     );
   }
 
-  public static async create(device: GPUDevice): Promise<ParticleSimulation> {
-    const shaderModule = device.createShaderModule({
-      label: "Particle compute shader",
-      code: computeShaderSource,
-    });
-    await assertShaderCompiles(shaderModule, "Particle compute shader");
-
+  public static async create(
+    device: GPUDevice,
+    shaderModule: GPUShaderModule,
+  ): Promise<ParticleSimulation> {
     const bindGroupLayout = device.createBindGroupLayout({
       label: "Particle simulation bind group layout",
       entries: [
@@ -81,7 +73,7 @@ export class ParticleSimulation {
         },
       ],
     });
-    const pipeline = await createComputePipeline(device, {
+    const pipeline = await device.createComputePipelineAsync({
       label: "Particle simulation pipeline",
       layout: device.createPipelineLayout({
         label: "Particle simulation pipeline layout",

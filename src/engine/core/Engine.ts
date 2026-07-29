@@ -234,10 +234,6 @@ export class Engine {
       this.orbitController.update(frame);
       this.cameraUniforms.update(this.camera);
 
-      for (const module of this.modules) {
-        module.update?.(frame);
-      }
-
       const commandEncoder = this.gpu.device.createCommandEncoder({
         label: `Frame ${frame.frameIndex}`,
       });

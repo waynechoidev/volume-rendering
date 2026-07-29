@@ -4,7 +4,7 @@ import {
   createCubeVertices,
   createGridVertices,
   getVertexCount,
-} from "@/modules/engine-diagnostics/geometry";
+} from "@/engine/geometry/ColoredGeometry";
 
 describe("diagnostics geometry", () => {
   it("creates 12 cube triangles", () => {

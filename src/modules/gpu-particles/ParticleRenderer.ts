@@ -2,15 +2,9 @@ import type { CanvasSize } from "@/engine/core/CanvasSize";
 import type { ModuleRenderContext } from "@/engine/core/EngineModule";
 import { createBindGroup } from "@/engine/graphics/bind-groups/BindGroupFactory";
 import {
-  assertShaderCompiles,
-  createRenderPipeline,
-} from "@/engine/graphics/pipelines/PipelineFactory";
-import {
   createDepthTexture,
   type TextureResource,
 } from "@/engine/graphics/textures/TextureResource";
-import fragmentShaderSource from "@/modules/gpu-particles/particle.fragment.wgsl?raw";
-import vertexShaderSource from "@/modules/gpu-particles/particle.vertex.wgsl?raw";
 
 const DEPTH_FORMAT: GPUTextureFormat = "depth24plus";
 
@@ -37,18 +31,9 @@ export class ParticleRenderer {
     presentationFormat: GPUTextureFormat,
     cameraBuffer: GPUBuffer,
     parameterBuffer: GPUBuffer,
+    vertexShader: GPUShaderModule,
+    fragmentShader: GPUShaderModule,
   ): Promise<ParticleRenderer> {
-    const vertexShader = device.createShaderModule({
-      label: "Particle vertex shader",
-      code: vertexShaderSource,
-    });
-    const fragmentShader = device.createShaderModule({
-      label: "Particle fragment shader",
-      code: fragmentShaderSource,
-    });
-    await assertShaderCompiles(vertexShader, "Particle vertex shader");
-    await assertShaderCompiles(fragmentShader, "Particle fragment shader");
-
     const bindGroupLayout = device.createBindGroupLayout({
       label: "Particle render bind group layout",
       entries: [
@@ -69,7 +54,7 @@ export class ParticleRenderer {
         },
       ],
     });
-    const pipeline = await createRenderPipeline(device, {
+    const pipeline = await device.createRenderPipelineAsync({
       label: "Particle render pipeline",
       layout: device.createPipelineLayout({
         label: "Particle render pipeline layout",
@@ -80,8 +65,8 @@ export class ParticleRenderer {
         entryPoint: "main",
       },
       fragment: {
-          module: fragmentShader,
-          entryPoint: "main",
+        module: fragmentShader,
+        entryPoint: "main",
         targets: [
           {
             format: presentationFormat,

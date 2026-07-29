@@ -1,14 +1,6 @@
-import type {
-  EngineContext,
-  EngineModule,
-  ModuleRenderContext,
-} from "@/engine/core/EngineModule";
-import type { FrameInfo } from "@/engine/core/FrameLoop";
 import { UniformBuffer } from "@/engine/graphics/buffers/UniformBuffer";
-import {
-  assertShaderCompiles,
-  createRenderPipeline,
-} from "@/engine/graphics/pipelines/PipelineFactory";
+import { Module } from "@/engine/modules/Module";
+import fullscreenVertexSource from "@/engine/shaders/fullscreen.vertex.wgsl?raw";
 import {
   createSampler,
   TextureResource,
@@ -18,12 +10,11 @@ import {
   DEFAULT_VOLUME_DIMENSIONS,
 } from "@/modules/volume-rendering/volume-data";
 import fragmentShaderSource from "@/modules/volume-rendering/volume.fragment.wgsl?raw";
-import vertexShaderSource from "@/modules/volume-rendering/volume.vertex.wgsl?raw";
 
 const PARAMETER_BYTES = 32;
 const VOLUME_FORMAT: GPUTextureFormat = "rgba8unorm";
 
-export class VolumeRenderingModule implements EngineModule {
+export class VolumeRenderingModule extends Module {
   public readonly name = "Volume Rendering";
 
   public stepCount = 128;
@@ -31,18 +22,19 @@ export class VolumeRenderingModule implements EngineModule {
   public absorption = 1.55;
   public volumeSize = 3.2;
 
-  private parameters: EngineContext["parameters"] | undefined;
-  private parameterBuffer: UniformBuffer | undefined;
+  private parameterBuffer!: UniformBuffer;
   private volumeTexture: TextureResource | undefined;
-  private pipeline: GPURenderPipeline | undefined;
-  private bindGroup: GPUBindGroup | undefined;
+  private pipeline!: GPURenderPipeline;
+  private bindGroup!: GPUBindGroup;
   private readonly parameterStorage = new ArrayBuffer(PARAMETER_BYTES);
   private readonly parameterFloats = new Float32Array(this.parameterStorage);
   private readonly parameterIntegers = new Uint32Array(this.parameterStorage);
 
-  public async initialize(context: EngineContext): Promise<void> {
-    const { gpu } = context;
-    this.parameters = context.parameters;
+  public async setup(): Promise<void> {
+    const { gpu } = this.context;
+    const vertex = await this.compileShader(fullscreenVertexSource, "vertex");
+    const fragment = await this.compileShader(fragmentShaderSource, "fragment");
+
     this.volumeTexture = new TextureResource(
       gpu.device,
       {
@@ -86,17 +78,6 @@ export class VolumeRenderingModule implements EngineModule {
       addressModeV: "clamp-to-edge",
       addressModeW: "clamp-to-edge",
     });
-    const vertex = gpu.device.createShaderModule({
-      label: "Volume rendering vertex shader",
-      code: vertexShaderSource,
-    });
-    const fragment = gpu.device.createShaderModule({
-      label: "Volume rendering fragment shader",
-      code: fragmentShaderSource,
-    });
-    await assertShaderCompiles(vertex, "Volume rendering vertex shader");
-    await assertShaderCompiles(fragment, "Volume rendering fragment shader");
-
     const bindGroupLayout = gpu.device.createBindGroupLayout({
       label: "Volume rendering bind group layout",
       entries: [
@@ -122,7 +103,7 @@ export class VolumeRenderingModule implements EngineModule {
         },
       ],
     });
-    this.pipeline = await createRenderPipeline(gpu.device, {
+    this.pipeline = await gpu.device.createRenderPipelineAsync({
       label: "Volume rendering pipeline",
       layout: gpu.device.createPipelineLayout({
         bindGroupLayouts: [bindGroupLayout],
@@ -141,7 +122,7 @@ export class VolumeRenderingModule implements EngineModule {
       entries: [
         {
           binding: 0,
-          resource: { buffer: context.cameraUniforms.resource.buffer },
+          resource: { buffer: this.cameraUniforms.resource.buffer },
         },
         { binding: 1, resource: this.volumeTexture.view },
         { binding: 2, resource: sampler },
@@ -152,7 +133,7 @@ export class VolumeRenderingModule implements EngineModule {
       ],
     });
 
-    const folder = context.parameters.register(this.name);
+    const folder = this.parameters.register(this.name);
     folder
       .add(this, "stepCount", 32, 256, 1)
       .name("Ray-march steps");
@@ -165,32 +146,13 @@ export class VolumeRenderingModule implements EngineModule {
     }
   }
 
-  public update(_frame: FrameInfo): void {
-    if (!this.parameterBuffer) {
-      return;
-    }
-
-    this.parameterIntegers[0] = Math.round(this.stepCount);
-    this.parameterFloats[1] = this.densityScale;
-    this.parameterFloats[2] = this.absorption;
-    this.parameterFloats[3] = 1 / DEFAULT_VOLUME_DIMENSIONS.width;
-    this.parameterFloats[4] = this.volumeSize;
-    this.parameterBuffer.write(this.parameterFloats);
-  }
-
-  public render({
-    commandEncoder,
-    colorView,
-  }: ModuleRenderContext): void {
-    if (!this.pipeline || !this.bindGroup) {
-      throw new Error("Volume Rendering rendered before initialization.");
-    }
-
-    const pass = commandEncoder.beginRenderPass({
+  public frame(): void {
+    this.writeParameters();
+    const pass = this.commandEncoder.beginRenderPass({
       label: "Volume ray-marching pass",
       colorAttachments: [
         {
-          view: colorView,
+          view: this.colorView,
           clearValue: { r: 0.01, g: 0.02, b: 0.04, a: 1 },
           loadOp: "clear",
           storeOp: "store",
@@ -203,14 +165,18 @@ export class VolumeRenderingModule implements EngineModule {
     pass.end();
   }
 
-  public destroy(): void {
-    this.parameters?.remove(this.name);
+  public teardown(): void {
     this.volumeTexture?.destroy();
     this.parameterBuffer?.destroy();
-    this.bindGroup = undefined;
-    this.pipeline = undefined;
     this.volumeTexture = undefined;
-    this.parameterBuffer = undefined;
-    this.parameters = undefined;
+  }
+
+  private writeParameters(): void {
+    this.parameterIntegers[0] = Math.round(this.stepCount);
+    this.parameterFloats[1] = this.densityScale;
+    this.parameterFloats[2] = this.absorption;
+    this.parameterFloats[3] = 1 / DEFAULT_VOLUME_DIMENSIONS.width;
+    this.parameterFloats[4] = this.volumeSize;
+    this.parameterBuffer.write(this.parameterFloats);
   }
 }

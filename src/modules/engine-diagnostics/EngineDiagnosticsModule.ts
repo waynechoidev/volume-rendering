@@ -1,142 +1,43 @@
-import type { CanvasSize } from "@/engine/core/CanvasSize";
-import type {
-  EngineContext,
-  EngineModule,
-  ModuleRenderContext,
-} from "@/engine/core/EngineModule";
+import {
+  createCubeVertices,
+  createGridVertices,
+  getVertexCount,
+} from "@/engine/geometry/ColoredGeometry";
 import { createBindGroup } from "@/engine/graphics/bind-groups/BindGroupFactory";
 import { GPUBufferResource } from "@/engine/graphics/buffers/GPUBufferResource";
-import {
-  assertShaderCompiles,
-  createRenderPipeline,
-} from "@/engine/graphics/pipelines/PipelineFactory";
+import { Module } from "@/engine/modules/Module";
 import {
   createDepthTexture,
   type TextureResource,
 } from "@/engine/graphics/textures/TextureResource";
 import fragmentShaderSource from "@/modules/engine-diagnostics/diagnostics.fragment.wgsl?raw";
 import vertexShaderSource from "@/modules/engine-diagnostics/diagnostics.vertex.wgsl?raw";
-import {
-  createCubeVertices,
-  createGridVertices,
-  getVertexCount,
-} from "@/modules/engine-diagnostics/geometry";
 
 const VERTEX_STRIDE = 6 * Float32Array.BYTES_PER_ELEMENT;
 const DEPTH_FORMAT: GPUTextureFormat = "depth24plus";
 
-export class EngineDiagnosticsModule implements EngineModule {
+export class EngineDiagnosticsModule extends Module {
   public readonly name = "Engine Diagnostics";
 
   public enabled = true;
   public showCube = true;
   public showGrid = true;
 
-  private device: GPUDevice | undefined;
-  private cubePipeline: GPURenderPipeline | undefined;
-  private gridPipeline: GPURenderPipeline | undefined;
-  private bindGroup: GPUBindGroup | undefined;
-  private cubeBuffer: GPUBufferResource | undefined;
-  private gridBuffer: GPUBufferResource | undefined;
-  private depthTexture: TextureResource | undefined;
+  private cubePipeline!: GPURenderPipeline;
+  private gridPipeline!: GPURenderPipeline;
+  private bindGroup!: GPUBindGroup;
+  private cubeBuffer!: GPUBufferResource;
+  private gridBuffer!: GPUBufferResource;
+  private depthTexture!: TextureResource;
   private cubeVertexCount = 0;
   private gridVertexCount = 0;
-  private parameters: EngineContext["parameters"] | undefined;
 
-  public render({
-    commandEncoder,
-    colorView,
-  }: ModuleRenderContext): void {
-    if (!this.depthTexture) {
-      throw new Error("Diagnostics depth texture is not initialized.");
-    }
-
-    const renderPass = commandEncoder.beginRenderPass({
-      label: "Engine diagnostics render pass",
-      colorAttachments: [
-        {
-          view: colorView,
-          clearValue: { r: 0.014, g: 0.02, b: 0.04, a: 1 },
-          loadOp: "clear",
-          storeOp: "store",
-        },
-      ],
-      depthStencilAttachment: {
-        view: this.depthTexture.view,
-        depthClearValue: 1,
-        depthLoadOp: "clear",
-        depthStoreOp: "store",
-      },
-    });
-
-    if (this.enabled && this.bindGroup) {
-      renderPass.setBindGroup(0, this.bindGroup);
-
-      if (this.showGrid && this.gridPipeline && this.gridBuffer) {
-        renderPass.setPipeline(this.gridPipeline);
-        renderPass.setVertexBuffer(0, this.gridBuffer.buffer);
-        renderPass.draw(this.gridVertexCount);
-      }
-
-      if (this.showCube && this.cubePipeline && this.cubeBuffer) {
-        renderPass.setPipeline(this.cubePipeline);
-        renderPass.setVertexBuffer(0, this.cubeBuffer.buffer);
-        renderPass.draw(this.cubeVertexCount);
-      }
-    }
-
-    renderPass.end();
-  }
-
-  public resize(size: CanvasSize): void {
-    if (!this.device) {
-      return;
-    }
-
-    this.depthTexture?.destroy();
-    this.depthTexture = createDepthTexture(
-      this.device,
-      size.width,
-      size.height,
-      DEPTH_FORMAT,
-    );
-  }
-
-  public destroy(): void {
-    this.parameters?.remove(this.name);
-    this.depthTexture?.destroy();
-    this.cubeBuffer?.destroy();
-    this.gridBuffer?.destroy();
-    this.depthTexture = undefined;
-    this.cubeBuffer = undefined;
-    this.gridBuffer = undefined;
-    this.bindGroup = undefined;
-    this.cubePipeline = undefined;
-    this.gridPipeline = undefined;
-    this.parameters = undefined;
-    this.device = undefined;
-  }
-
-  public async initialize(context: EngineContext): Promise<void> {
-    const { gpu, cameraUniforms, parameters } = context;
-    this.device = gpu.device;
-    this.parameters = parameters;
-
-    const vertexShader = gpu.device.createShaderModule({
-      label: "Engine diagnostics vertex shader",
-      code: vertexShaderSource,
-    });
-    const fragmentShader = gpu.device.createShaderModule({
-      label: "Engine diagnostics fragment shader",
-      code: fragmentShaderSource,
-    });
-    await assertShaderCompiles(
-      vertexShader,
-      "Engine diagnostics vertex shader",
-    );
-    await assertShaderCompiles(
-      fragmentShader,
-      "Engine diagnostics fragment shader",
+  public async setup(): Promise<void> {
+    const { gpu, cameraUniforms } = this.context;
+    const vertex = await this.compileShader(vertexShaderSource, "vertex");
+    const fragmentShader = await this.compileShader(
+      fragmentShaderSource,
+      "fragment",
     );
 
     const vertexBuffers: GPUVertexBufferLayout[] = [
@@ -177,11 +78,11 @@ export class EngineDiagnosticsModule implements EngineModule {
       depthWriteEnabled: true,
     };
 
-    this.cubePipeline = await createRenderPipeline(gpu.device, {
+    this.cubePipeline = await gpu.device.createRenderPipelineAsync({
       label: "Diagnostics cube pipeline",
       layout: pipelineLayout,
       vertex: {
-        module: vertexShader,
+        module: vertex,
         entryPoint: "main",
         buffers: vertexBuffers,
       },
@@ -193,11 +94,11 @@ export class EngineDiagnosticsModule implements EngineModule {
       },
       depthStencil,
     });
-    this.gridPipeline = await createRenderPipeline(gpu.device, {
+    this.gridPipeline = await gpu.device.createRenderPipelineAsync({
       label: "Diagnostics grid pipeline",
       layout: pipelineLayout,
       vertex: {
-        module: vertexShader,
+        module: vertex,
         entryPoint: "main",
         buffers: vertexBuffers,
       },
@@ -237,10 +138,62 @@ export class EngineDiagnosticsModule implements EngineModule {
       ],
     );
 
-    const folder = parameters.register(this.name);
+    const folder = this.parameters.register(this.name);
     folder.add(this, "enabled").name("Enabled");
     folder.add(this, "showCube").name("Show cube");
     folder.add(this, "showGrid").name("Show grid");
   }
+  public resizeResources(): void {
+    this.depthTexture?.destroy();
+    this.depthTexture = createDepthTexture(
+      this.device,
+      this.size.width,
+      this.size.height,
+      DEPTH_FORMAT,
+    );
+  }
 
+  public frame(): void {
+    const renderPass = this.commandEncoder.beginRenderPass({
+      label: "Engine diagnostics render pass",
+      colorAttachments: [
+        {
+          view: this.colorView,
+          clearValue: { r: 0.014, g: 0.02, b: 0.04, a: 1 },
+          loadOp: "clear",
+          storeOp: "store",
+        },
+      ],
+      depthStencilAttachment: {
+        view: this.depthTexture.view,
+        depthClearValue: 1,
+        depthLoadOp: "clear",
+        depthStoreOp: "store",
+      },
+    });
+
+    if (this.enabled) {
+      renderPass.setBindGroup(0, this.bindGroup);
+
+      if (this.showGrid) {
+        renderPass.setPipeline(this.gridPipeline);
+        renderPass.setVertexBuffer(0, this.gridBuffer.buffer);
+        renderPass.draw(this.gridVertexCount);
+      }
+
+      if (this.showCube) {
+        renderPass.setPipeline(this.cubePipeline);
+        renderPass.setVertexBuffer(0, this.cubeBuffer.buffer);
+        renderPass.draw(this.cubeVertexCount);
+      }
+    }
+
+    renderPass.end();
+  }
+
+  public teardown(): void {
+    this.depthTexture?.destroy();
+    this.cubeBuffer?.destroy();
+    this.gridBuffer?.destroy();
+  }
 }
