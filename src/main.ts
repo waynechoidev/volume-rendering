@@ -1,4 +1,6 @@
 import { EngineApplication } from "@/engine/application/EngineApplication";
+import { ComputeCircleModule } from "@/modules/compute-circle/ComputeCircleModule";
+import computeCircleReadme from "@/modules/compute-circle/README.md?raw";
 import { ComputeTextureModule } from "@/modules/compute-texture/ComputeTextureModule";
 import computeTextureReadme from "@/modules/compute-texture/README.md?raw";
 import { EngineDiagnosticsModule } from "@/modules/engine-diagnostics/EngineDiagnosticsModule";
@@ -12,6 +14,11 @@ import volumeRenderingReadme from "@/modules/volume-rendering/README.md?raw";
 
 const application = new EngineApplication({
   modules: [
+    {
+      label: "Compute Circle",
+      module: ComputeCircleModule,
+      readme: computeCircleReadme,
+    },
     {
       label: "Volume Rendering",
       module: VolumeRenderingModule,

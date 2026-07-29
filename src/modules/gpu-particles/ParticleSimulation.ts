@@ -89,7 +89,7 @@ export class ParticleSimulation {
       }),
       compute: {
         module: shaderModule,
-        entryPoint: "compute_main",
+        entryPoint: "main",
       },
     });
 

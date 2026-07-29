@@ -19,7 +19,7 @@ struct SimulationParameters {
 @group(0) @binding(2) var<uniform> params: SimulationParameters;
 
 @compute @workgroup_size(256)
-fn compute_main(@builtin(global_invocation_id) id: vec3u) {
+fn main(@builtin(global_invocation_id) id: vec3u) {
   let index = id.x;
   if (index >= params.particle_count) {
     return;

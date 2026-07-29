@@ -127,7 +127,7 @@ export class Engine {
     const validationError = await this.gpu.device.popErrorScope();
 
     if (initializationError) {
-      module.destroy();
+      module.destroy?.();
       throw this.asError(
         initializationError,
         `Failed to initialize module "${module.name}".`,
@@ -135,7 +135,7 @@ export class Engine {
     }
 
     if (validationError) {
-      module.destroy();
+      module.destroy?.();
       throw new Error(
         `WebGPU validation failed while initializing module "${module.name}": ${validationError.message}`,
       );
@@ -144,7 +144,7 @@ export class Engine {
     this.modules.push(module);
 
     if (this.size) {
-      module.resize(this.size);
+      module.resize?.(this.size);
     }
   }
 
@@ -156,7 +156,7 @@ export class Engine {
     }
 
     const [module] = this.modules.splice(index, 1);
-    module?.destroy();
+    module?.destroy?.();
     this.debugUI.parameters.remove(name);
   }
 
@@ -194,7 +194,7 @@ export class Engine {
     this.abortController.abort();
 
     for (let index = this.modules.length - 1; index >= 0; index -= 1) {
-      this.modules[index]?.destroy();
+      this.modules[index]?.destroy?.();
     }
 
     this.modules.length = 0;
@@ -235,7 +235,7 @@ export class Engine {
       this.cameraUniforms.update(this.camera);
 
       for (const module of this.modules) {
-        module.update(frame);
+        module.update?.(frame);
       }
 
       const commandEncoder = this.gpu.device.createCommandEncoder({
@@ -281,7 +281,7 @@ export class Engine {
     this.camera.setAspect(nextSize.width / nextSize.height);
 
     for (const module of this.modules) {
-      module.resize(nextSize);
+      module.resize?.(nextSize);
     }
   }
 

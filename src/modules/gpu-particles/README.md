@@ -53,11 +53,11 @@ to reduce GPU memory and compute load.
 
 ## Files
 
-- `GPUParticleModule.ts`: module composition, parameters, and lifecycle.
+- `GPUParticleModule.ts`: particle runtime composition and controls.
 - `ParticleSimulation.ts`: compute pipeline and ping-pong storage buffers.
 - `ParticleRenderer.ts`: instanced rendering and depth resources.
 - `particle.compute.wgsl`: particle integration.
-- `particle.render.wgsl`: billboard construction and coloring.
+- `particle.vertex.wgsl`: billboard construction and particle coloring.
+- `particle.fragment.wgsl`: circular particle coverage and blending output.
 - `particle-data.ts`: deterministic initial state.
 - `particle-data.test.ts`: particle-layout and initialization tests.
-

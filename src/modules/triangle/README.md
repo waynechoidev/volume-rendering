@@ -1,8 +1,8 @@
 # Triangle
 
 This is the smallest rendering example in the engine. It validates WebGPU
-initialization, shader compilation, render-pipeline creation, uniform binding,
-command encoding, and presentation to the canvas.
+initialization, shader compilation, render-pipeline creation, command encoding,
+and presentation to the canvas.
 
 ## Rendering
 
@@ -15,14 +15,11 @@ renderPass.draw(3);
 
 The fragment shader interpolates the vertex colors across the triangle.
 
-## Responsive sizing
-
-The module uploads the ratios of the canvas dimensions to a small uniform
-buffer. The shader applies those ratios so the triangle keeps its proportions
-when the viewport changes between portrait and landscape orientations.
+The positions are written directly in clip space. The example intentionally has
+no uniform buffer or viewport correction so the rendering path stays minimal.
 
 ## Files
 
-- `TriangleModule.ts`: pipeline, uniform buffer, resize handling, and lifecycle.
-- `triangle.wgsl`: procedural vertices and fragment colors.
-
+- `TriangleModule.ts`: vertex shader, fragment shader, and screen pass.
+- `triangle.vertex.wgsl`: procedural triangle vertices.
+- `triangle.fragment.wgsl`: interpolated fragment color output.

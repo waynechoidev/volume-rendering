@@ -17,14 +17,9 @@ struct VertexOutput {
 @group(0) @binding(0) var<uniform> camera: CameraUniforms;
 
 @vertex
-fn vertex_main(input: VertexInput) -> VertexOutput {
+fn main(input: VertexInput) -> VertexOutput {
   var output: VertexOutput;
   output.position = camera.view_projection * vec4f(input.position, 1.0);
   output.color = input.color;
   return output;
-}
-
-@fragment
-fn fragment_main(input: VertexOutput) -> @location(0) vec4f {
-  return vec4f(input.color, 1.0);
 }

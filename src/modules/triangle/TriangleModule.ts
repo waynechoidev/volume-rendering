@@ -1,89 +1,53 @@
-import type { CanvasSize } from "@/engine/core/CanvasSize";
 import type {
   EngineContext,
   EngineModule,
   ModuleRenderContext,
 } from "@/engine/core/EngineModule";
-import type { FrameInfo } from "@/engine/core/FrameLoop";
-import shaderSource from "@/modules/triangle/triangle.wgsl?raw";
+import {
+  assertShaderCompiles,
+  createRenderPipeline,
+} from "@/engine/graphics/pipelines/PipelineFactory";
+import fragmentShaderSource from "@/modules/triangle/triangle.fragment.wgsl?raw";
+import vertexShaderSource from "@/modules/triangle/triangle.vertex.wgsl?raw";
 
 export class TriangleModule implements EngineModule {
-  public readonly name = "triangle";
+  public readonly name = "Triangle";
 
   private pipeline: GPURenderPipeline | undefined;
-  private bindGroup: GPUBindGroup | undefined;
-  private canvasUniformBuffer: GPUBuffer | undefined;
-  private device: GPUDevice | undefined;
-  private readonly canvasUniformData = new Float32Array(4);
 
   public async initialize({ gpu }: EngineContext): Promise<void> {
-    this.device = gpu.device;
-    const shaderModule = gpu.device.createShaderModule({
-      label: "Triangle shader",
-      code: shaderSource,
+    const vertex = gpu.device.createShaderModule({
+      label: "Triangle vertex shader",
+      code: vertexShaderSource,
     });
-
-    const compilationInfo = await shaderModule.getCompilationInfo();
-    const errors = compilationInfo.messages.filter(
-      ({ type }) => type === "error",
-    );
-
-    if (errors.length > 0) {
-      const details = errors
-        .map(
-          ({ lineNum, linePos, message }) =>
-            `line ${lineNum}:${linePos} ${message}`,
-        )
-        .join("\n");
-      throw new Error(`Triangle shader compilation failed:\n${details}`);
-    }
-
-    this.pipeline = await gpu.device.createRenderPipelineAsync({
+    const fragment = gpu.device.createShaderModule({
+      label: "Triangle fragment shader",
+      code: fragmentShaderSource,
+    });
+    await assertShaderCompiles(vertex, "Triangle vertex shader");
+    await assertShaderCompiles(fragment, "Triangle fragment shader");
+    this.pipeline = await createRenderPipeline(gpu.device, {
       label: "Triangle render pipeline",
       layout: "auto",
-      vertex: {
-        module: shaderModule,
-        entryPoint: "vertex_main",
-      },
+      vertex: { module: vertex, entryPoint: "main" },
       fragment: {
-        module: shaderModule,
-        entryPoint: "fragment_main",
+        module: fragment,
+        entryPoint: "main",
         targets: [{ format: gpu.presentationFormat }],
       },
-      primitive: {
-        topology: "triangle-list",
-        cullMode: "none",
-      },
-    });
-
-    this.canvasUniformBuffer = gpu.device.createBuffer({
-      label: "Triangle canvas uniforms",
-      size: this.canvasUniformData.byteLength,
-      usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
-    });
-    this.bindGroup = gpu.device.createBindGroup({
-      label: "Triangle bind group",
-      layout: this.pipeline.getBindGroupLayout(0),
-      entries: [
-        {
-          binding: 0,
-          resource: { buffer: this.canvasUniformBuffer },
-        },
-      ],
+      primitive: { topology: "triangle-list" },
     });
   }
-
-  public update(_frame: FrameInfo): void {}
 
   public render({
     commandEncoder,
     colorView,
   }: ModuleRenderContext): void {
-    if (!this.pipeline || !this.bindGroup) {
-      throw new Error("TriangleModule rendered before initialization.");
+    if (!this.pipeline) {
+      throw new Error("Triangle rendered before initialization.");
     }
 
-    const renderPass = commandEncoder.beginRenderPass({
+    const pass = commandEncoder.beginRenderPass({
       label: "Triangle render pass",
       colorAttachments: [
         {
@@ -94,33 +58,8 @@ export class TriangleModule implements EngineModule {
         },
       ],
     });
-
-    renderPass.setPipeline(this.pipeline);
-    renderPass.setBindGroup(0, this.bindGroup);
-    renderPass.draw(3);
-    renderPass.end();
-  }
-
-  public resize(size: CanvasSize): void {
-    if (!this.device || !this.canvasUniformBuffer) {
-      return;
-    }
-
-    const shortestSide = Math.min(size.width, size.height);
-    this.canvasUniformData[0] = shortestSide / size.width;
-    this.canvasUniformData[1] = shortestSide / size.height;
-    this.device.queue.writeBuffer(
-      this.canvasUniformBuffer,
-      0,
-      this.canvasUniformData,
-    );
-  }
-
-  public destroy(): void {
-    this.canvasUniformBuffer?.destroy();
-    this.canvasUniformBuffer = undefined;
-    this.bindGroup = undefined;
-    this.pipeline = undefined;
-    this.device = undefined;
+    pass.setPipeline(this.pipeline);
+    pass.draw(3);
+    pass.end();
   }
 }

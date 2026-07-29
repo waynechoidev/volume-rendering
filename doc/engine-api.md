@@ -12,10 +12,10 @@ An `EngineModule` implements:
 interface EngineModule {
   readonly name: string;
   initialize(context: EngineContext): void | Promise<void>;
-  update(frame: FrameInfo): void;
+  update?(frame: FrameInfo): void;
   render(context: ModuleRenderContext): void;
-  resize(size: CanvasSize): void;
-  destroy(): void;
+  resize?(size: CanvasSize): void;
+  destroy?(): void;
 }
 ```
 
@@ -64,6 +64,21 @@ Reusable helpers live under `src/engine/graphics`:
 These utilities expose WebGPU objects rather than hiding binding layouts or
 resource usage.
 
+## Research modules
+
+Each research project directly implements `EngineModule`. `initialize` and
+`render` are required. `update`, `resize`, and `destroy` are optional so simple
+examples do not need empty lifecycle methods.
+
+Modules create native WebGPU objects and descriptors directly. Reusable helpers
+such as `assertShaderCompiles`, asynchronous pipeline factories,
+`GPUBufferResource`, `UniformBuffer`, and `TextureResource` reduce isolated
+boilerplate without defining a second GPU API.
+
+Bind groups, pass descriptors, command order, draw calls, dispatch calls, data
+uploads, resource replacement, and algorithm state remain imperative and
+visible in the module.
+
 ## Resource ownership
 
 The object that creates a GPU buffer or texture owns it and destroys it. Bind
@@ -73,4 +88,3 @@ when references are dropped.
 On resize, create the replacement texture and bind groups first, then destroy
 the previous texture. Do not recreate size-independent pipelines or uniform
 buffers. Never allocate transient GPU resources in `update` or `render`.
-

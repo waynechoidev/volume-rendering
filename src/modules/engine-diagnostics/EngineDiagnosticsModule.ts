@@ -4,7 +4,6 @@ import type {
   EngineModule,
   ModuleRenderContext,
 } from "@/engine/core/EngineModule";
-import type { FrameInfo } from "@/engine/core/FrameLoop";
 import { createBindGroup } from "@/engine/graphics/bind-groups/BindGroupFactory";
 import { GPUBufferResource } from "@/engine/graphics/buffers/GPUBufferResource";
 import {
@@ -15,7 +14,8 @@ import {
   createDepthTexture,
   type TextureResource,
 } from "@/engine/graphics/textures/TextureResource";
-import shaderSource from "@/modules/engine-diagnostics/diagnostics.wgsl?raw";
+import fragmentShaderSource from "@/modules/engine-diagnostics/diagnostics.fragment.wgsl?raw";
+import vertexShaderSource from "@/modules/engine-diagnostics/diagnostics.vertex.wgsl?raw";
 import {
   createCubeVertices,
   createGridVertices,
@@ -42,123 +42,6 @@ export class EngineDiagnosticsModule implements EngineModule {
   private cubeVertexCount = 0;
   private gridVertexCount = 0;
   private parameters: EngineContext["parameters"] | undefined;
-
-  public async initialize(context: EngineContext): Promise<void> {
-    const { gpu, cameraUniforms, parameters } = context;
-    this.device = gpu.device;
-    this.parameters = parameters;
-
-    const shaderModule = gpu.device.createShaderModule({
-      label: "Engine diagnostics shader",
-      code: shaderSource,
-    });
-    await assertShaderCompiles(shaderModule, "Engine diagnostics shader");
-
-    const vertexBuffers: GPUVertexBufferLayout[] = [
-      {
-        arrayStride: VERTEX_STRIDE,
-        attributes: [
-          { shaderLocation: 0, offset: 0, format: "float32x3" },
-          {
-            shaderLocation: 1,
-            offset: 3 * Float32Array.BYTES_PER_ELEMENT,
-            format: "float32x3",
-          },
-        ],
-      },
-    ];
-    const cameraBindGroupLayout = gpu.device.createBindGroupLayout({
-      label: "Diagnostics camera bind group layout",
-      entries: [
-        {
-          binding: 0,
-          visibility: GPUShaderStage.VERTEX,
-          buffer: { type: "uniform" },
-        },
-      ],
-    });
-    const pipelineLayout = gpu.device.createPipelineLayout({
-      label: "Diagnostics pipeline layout",
-      bindGroupLayouts: [cameraBindGroupLayout],
-    });
-    const fragment: GPUFragmentState = {
-      module: shaderModule,
-      entryPoint: "fragment_main",
-      targets: [{ format: gpu.presentationFormat }],
-    };
-    const depthStencil: GPUDepthStencilState = {
-      format: DEPTH_FORMAT,
-      depthCompare: "less",
-      depthWriteEnabled: true,
-    };
-
-    this.cubePipeline = await createRenderPipeline(gpu.device, {
-      label: "Diagnostics cube pipeline",
-      layout: pipelineLayout,
-      vertex: {
-        module: shaderModule,
-        entryPoint: "vertex_main",
-        buffers: vertexBuffers,
-      },
-      fragment,
-      primitive: {
-        topology: "triangle-list",
-        cullMode: "back",
-        frontFace: "ccw",
-      },
-      depthStencil,
-    });
-    this.gridPipeline = await createRenderPipeline(gpu.device, {
-      label: "Diagnostics grid pipeline",
-      layout: pipelineLayout,
-      vertex: {
-        module: shaderModule,
-        entryPoint: "vertex_main",
-        buffers: vertexBuffers,
-      },
-      fragment,
-      primitive: { topology: "line-list" },
-      depthStencil: {
-        ...depthStencil,
-        depthWriteEnabled: false,
-      },
-    });
-
-    const cubeVertices = createCubeVertices();
-    const gridVertices = createGridVertices();
-    this.cubeVertexCount = getVertexCount(cubeVertices);
-    this.gridVertexCount = getVertexCount(gridVertices);
-    this.cubeBuffer = new GPUBufferResource(gpu.device, {
-      label: "Diagnostics cube vertices",
-      size: cubeVertices.byteLength,
-      usage: GPUBufferUsage.VERTEX,
-      initialData: cubeVertices,
-    });
-    this.gridBuffer = new GPUBufferResource(gpu.device, {
-      label: "Diagnostics grid vertices",
-      size: gridVertices.byteLength,
-      usage: GPUBufferUsage.VERTEX,
-      initialData: gridVertices,
-    });
-    this.bindGroup = createBindGroup(
-      gpu.device,
-      "Diagnostics camera bind group",
-      cameraBindGroupLayout,
-      [
-        {
-          binding: 0,
-          resource: { buffer: cameraUniforms.resource.buffer },
-        },
-      ],
-    );
-
-    const folder = parameters.register(this.name);
-    folder.add(this, "enabled").name("Enabled");
-    folder.add(this, "showCube").name("Show cube");
-    folder.add(this, "showGrid").name("Show grid");
-  }
-
-  public update(_frame: FrameInfo): void {}
 
   public render({
     commandEncoder,
@@ -233,4 +116,131 @@ export class EngineDiagnosticsModule implements EngineModule {
     this.parameters = undefined;
     this.device = undefined;
   }
+
+  public async initialize(context: EngineContext): Promise<void> {
+    const { gpu, cameraUniforms, parameters } = context;
+    this.device = gpu.device;
+    this.parameters = parameters;
+
+    const vertexShader = gpu.device.createShaderModule({
+      label: "Engine diagnostics vertex shader",
+      code: vertexShaderSource,
+    });
+    const fragmentShader = gpu.device.createShaderModule({
+      label: "Engine diagnostics fragment shader",
+      code: fragmentShaderSource,
+    });
+    await assertShaderCompiles(
+      vertexShader,
+      "Engine diagnostics vertex shader",
+    );
+    await assertShaderCompiles(
+      fragmentShader,
+      "Engine diagnostics fragment shader",
+    );
+
+    const vertexBuffers: GPUVertexBufferLayout[] = [
+      {
+        arrayStride: VERTEX_STRIDE,
+        attributes: [
+          { shaderLocation: 0, offset: 0, format: "float32x3" },
+          {
+            shaderLocation: 1,
+            offset: 3 * Float32Array.BYTES_PER_ELEMENT,
+            format: "float32x3",
+          },
+        ],
+      },
+    ];
+    const cameraBindGroupLayout = gpu.device.createBindGroupLayout({
+      label: "Diagnostics camera bind group layout",
+      entries: [
+        {
+          binding: 0,
+          visibility: GPUShaderStage.VERTEX,
+          buffer: { type: "uniform" },
+        },
+      ],
+    });
+    const pipelineLayout = gpu.device.createPipelineLayout({
+      label: "Diagnostics pipeline layout",
+      bindGroupLayouts: [cameraBindGroupLayout],
+    });
+    const fragment: GPUFragmentState = {
+      module: fragmentShader,
+      entryPoint: "main",
+      targets: [{ format: gpu.presentationFormat }],
+    };
+    const depthStencil: GPUDepthStencilState = {
+      format: DEPTH_FORMAT,
+      depthCompare: "less",
+      depthWriteEnabled: true,
+    };
+
+    this.cubePipeline = await createRenderPipeline(gpu.device, {
+      label: "Diagnostics cube pipeline",
+      layout: pipelineLayout,
+      vertex: {
+        module: vertexShader,
+        entryPoint: "main",
+        buffers: vertexBuffers,
+      },
+      fragment,
+      primitive: {
+        topology: "triangle-list",
+        cullMode: "back",
+        frontFace: "ccw",
+      },
+      depthStencil,
+    });
+    this.gridPipeline = await createRenderPipeline(gpu.device, {
+      label: "Diagnostics grid pipeline",
+      layout: pipelineLayout,
+      vertex: {
+        module: vertexShader,
+        entryPoint: "main",
+        buffers: vertexBuffers,
+      },
+      fragment,
+      primitive: { topology: "line-list" },
+      depthStencil: {
+        ...depthStencil,
+        depthWriteEnabled: false,
+      },
+    });
+
+    const cubeVertices = createCubeVertices();
+    const gridVertices = createGridVertices();
+    this.cubeVertexCount = getVertexCount(cubeVertices);
+    this.gridVertexCount = getVertexCount(gridVertices);
+    this.cubeBuffer = new GPUBufferResource(gpu.device, {
+      label: "Diagnostics cube vertices",
+      size: cubeVertices.byteLength,
+      usage: GPUBufferUsage.VERTEX,
+      initialData: cubeVertices,
+    });
+    this.gridBuffer = new GPUBufferResource(gpu.device, {
+      label: "Diagnostics grid vertices",
+      size: gridVertices.byteLength,
+      usage: GPUBufferUsage.VERTEX,
+      initialData: gridVertices,
+    });
+    this.bindGroup = createBindGroup(
+      gpu.device,
+      "Diagnostics camera bind group",
+      cameraBindGroupLayout,
+      [
+        {
+          binding: 0,
+          resource: { buffer: cameraUniforms.resource.buffer },
+        },
+      ],
+    );
+
+    const folder = parameters.register(this.name);
+    folder.add(this, "enabled").name("Enabled");
+    folder.add(this, "showCube").name("Show cube");
+    folder.add(this, "showGrid").name("Show grid");
+  }
+
 }

@@ -287,7 +287,7 @@ export class EngineApplication {
     try {
       const nextModule = new entry.module();
       if (version !== this.switchVersion || this.destroyed) {
-        nextModule.destroy();
+        nextModule.destroy?.();
         return;
       }
 

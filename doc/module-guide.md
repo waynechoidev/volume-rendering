@@ -7,10 +7,21 @@ module-local helpers, tests, WGSL source, and Markdown loaded with `?raw`.
 
 ```ts
 import type { EngineModule } from "@/engine/core/EngineModule";
-import shaderSource from "@/modules/my-module/render.wgsl?raw";
+import fragmentSource from "@/modules/my-module/render.fragment.wgsl?raw";
 ```
 
 Do not use relative `./` or `../` imports in source files.
+
+## Imperative research modules
+
+Implement `EngineModule` directly for every registered experiment. Build
+native WebGPU pipelines, bind groups, and command passes in the module. The
+engine provides the device, frame loop, canvas target, camera, input,
+parameters, and error handling; it does not infer pass order or shader
+bindings.
+
+Keep each shader stage in a separate WGSL file with exactly one entry point
+named `main`.
 
 Create an independent directory under `src/modules/<module-name>/`. Keep its
 TypeScript integration, WGSL, pipelines, binding contracts, parameters, and
@@ -18,15 +29,16 @@ tests together.
 
 ## Minimal workflow
 
-1. Implement the structural `EngineModule` contract from
-   `src/engine/core/EngineModule.ts`.
+1. Create a class that implements `EngineModule`.
 2. Create shaders and long-lived pipelines in `initialize`.
-3. Register module controls through `context.parameters`.
-4. Create dimension-dependent textures in `resize`.
-5. Upload parameters in `update`.
-6. Encode passes with `ModuleRenderContext.commandEncoder` in `render`.
-7. Destroy owned buffers and textures and remove UI registrations in `destroy`.
-8. Add the module class to the explicit `modules` list in `src/main.ts`.
+3. Create buffers and textures with native WebGPU or focused engine helpers.
+4. Upload dynamic values in `update`.
+5. Replace dimension-dependent resources in `resize`.
+6. Encode compute and render commands explicitly in `render`.
+7. Implement `destroy` when the module owns buffers, textures, UI, or other
+   explicit resources.
+8. Add the returned module constructor to the explicit `modules` list in
+   `src/main.ts`.
 
 List registration is intentional. Merely adding a folder does not expose a
 module in the runtime picker:

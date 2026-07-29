@@ -34,8 +34,8 @@ The depth texture is recreated when the drawing-buffer dimensions change.
 
 ## Files
 
-- `EngineDiagnosticsModule.ts`: resources, pipelines, controls, and lifecycle.
-- `diagnostics.wgsl`: camera transformation and vertex-color rendering.
+- `EngineDiagnosticsModule.ts`: diagnostic pipelines, resources, controls, and runtime.
+- `diagnostics.vertex.wgsl`: camera transformation.
+- `diagnostics.fragment.wgsl`: vertex-color rendering.
 - `geometry.ts`: deterministic cube and grid vertex generation.
 - `geometry.test.ts`: geometry layout and count validation.
-

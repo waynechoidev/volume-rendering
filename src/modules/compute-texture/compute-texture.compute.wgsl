@@ -20,7 +20,7 @@ fn palette(value: f32) -> vec3f {
 }
 
 @compute @workgroup_size(8, 8)
-fn compute_main(@builtin(global_invocation_id) id: vec3u) {
+fn main(@builtin(global_invocation_id) id: vec3u) {
   if (any(id.xy >= params.resolution)) {
     return;
   }

@@ -9,7 +9,8 @@ import {
   createDepthTexture,
   type TextureResource,
 } from "@/engine/graphics/textures/TextureResource";
-import renderShaderSource from "@/modules/gpu-particles/particle.render.wgsl?raw";
+import fragmentShaderSource from "@/modules/gpu-particles/particle.fragment.wgsl?raw";
+import vertexShaderSource from "@/modules/gpu-particles/particle.vertex.wgsl?raw";
 
 const DEPTH_FORMAT: GPUTextureFormat = "depth24plus";
 
@@ -37,11 +38,16 @@ export class ParticleRenderer {
     cameraBuffer: GPUBuffer,
     parameterBuffer: GPUBuffer,
   ): Promise<ParticleRenderer> {
-    const shaderModule = device.createShaderModule({
-      label: "Particle render shader",
-      code: renderShaderSource,
+    const vertexShader = device.createShaderModule({
+      label: "Particle vertex shader",
+      code: vertexShaderSource,
     });
-    await assertShaderCompiles(shaderModule, "Particle render shader");
+    const fragmentShader = device.createShaderModule({
+      label: "Particle fragment shader",
+      code: fragmentShaderSource,
+    });
+    await assertShaderCompiles(vertexShader, "Particle vertex shader");
+    await assertShaderCompiles(fragmentShader, "Particle fragment shader");
 
     const bindGroupLayout = device.createBindGroupLayout({
       label: "Particle render bind group layout",
@@ -70,12 +76,12 @@ export class ParticleRenderer {
         bindGroupLayouts: [bindGroupLayout],
       }),
       vertex: {
-        module: shaderModule,
-        entryPoint: "vertex_main",
+        module: vertexShader,
+        entryPoint: "main",
       },
       fragment: {
-        module: shaderModule,
-        entryPoint: "fragment_main",
+          module: fragmentShader,
+          entryPoint: "main",
         targets: [
           {
             format: presentationFormat,

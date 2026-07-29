@@ -1,4 +1,3 @@
-import type { CanvasSize } from "@/engine/core/CanvasSize";
 import type {
   EngineContext,
   EngineModule,
@@ -14,20 +13,15 @@ import {
   createSampler,
   TextureResource,
 } from "@/engine/graphics/textures/TextureResource";
-import { createVolumeData, DEFAULT_VOLUME_DIMENSIONS } from "@/modules/volume-rendering/volume-data";
-import contractsShaderSource from "@/modules/volume-rendering/volume.contracts.wgsl?raw";
-import densityShaderSource from "@/modules/volume-rendering/volume.density.wgsl?raw";
-import geometryShaderSource from "@/modules/volume-rendering/volume.geometry.wgsl?raw";
-import renderShaderSource from "@/modules/volume-rendering/volume.render.wgsl?raw";
+import {
+  createVolumeData,
+  DEFAULT_VOLUME_DIMENSIONS,
+} from "@/modules/volume-rendering/volume-data";
+import fragmentShaderSource from "@/modules/volume-rendering/volume.fragment.wgsl?raw";
+import vertexShaderSource from "@/modules/volume-rendering/volume.vertex.wgsl?raw";
 
 const PARAMETER_BYTES = 32;
 const VOLUME_FORMAT: GPUTextureFormat = "rgba8unorm";
-const shaderSource = [
-  contractsShaderSource,
-  geometryShaderSource,
-  densityShaderSource,
-  renderShaderSource,
-].join("\n");
 
 export class VolumeRenderingModule implements EngineModule {
   public readonly name = "Volume Rendering";
@@ -47,13 +41,10 @@ export class VolumeRenderingModule implements EngineModule {
   private readonly parameterIntegers = new Uint32Array(this.parameterStorage);
 
   public async initialize(context: EngineContext): Promise<void> {
-    const device = context.gpu.device;
+    const { gpu } = context;
     this.parameters = context.parameters;
-
-    // The volume is uploaded once and sampled on the GPU every frame. No
-    // readback or per-frame texture allocation is needed.
     this.volumeTexture = new TextureResource(
-      device,
+      gpu.device,
       {
         label: "Volume density texture",
         size: {
@@ -67,10 +58,9 @@ export class VolumeRenderingModule implements EngineModule {
       },
       { dimension: "3d" },
     );
-    const volumeData = createVolumeData();
-    device.queue.writeTexture(
+    gpu.device.queue.writeTexture(
       { texture: this.volumeTexture.texture },
-      volumeData,
+      createVolumeData(),
       {
         bytesPerRow: DEFAULT_VOLUME_DIMENSIONS.width * 4,
         rowsPerImage: DEFAULT_VOLUME_DIMENSIONS.height,
@@ -83,11 +73,12 @@ export class VolumeRenderingModule implements EngineModule {
     );
 
     this.parameterBuffer = new UniformBuffer(
-      device,
+      gpu.device,
       "Volume rendering parameters",
       PARAMETER_BYTES,
     );
-    const sampler = createSampler(device, {
+    const sampler = createSampler(gpu.device, {
+      label: "Volume density sampler",
       magFilter: "linear",
       minFilter: "linear",
       mipmapFilter: "linear",
@@ -95,13 +86,18 @@ export class VolumeRenderingModule implements EngineModule {
       addressModeV: "clamp-to-edge",
       addressModeW: "clamp-to-edge",
     });
-    const shader = device.createShaderModule({
-      label: "Volume rendering shader",
-      code: shaderSource,
+    const vertex = gpu.device.createShaderModule({
+      label: "Volume rendering vertex shader",
+      code: vertexShaderSource,
     });
-    await assertShaderCompiles(shader, "Volume rendering shader");
+    const fragment = gpu.device.createShaderModule({
+      label: "Volume rendering fragment shader",
+      code: fragmentShaderSource,
+    });
+    await assertShaderCompiles(vertex, "Volume rendering vertex shader");
+    await assertShaderCompiles(fragment, "Volume rendering fragment shader");
 
-    const bindGroupLayout = device.createBindGroupLayout({
+    const bindGroupLayout = gpu.device.createBindGroupLayout({
       label: "Volume rendering bind group layout",
       entries: [
         {
@@ -126,18 +122,20 @@ export class VolumeRenderingModule implements EngineModule {
         },
       ],
     });
-    this.pipeline = await createRenderPipeline(device, {
+    this.pipeline = await createRenderPipeline(gpu.device, {
       label: "Volume rendering pipeline",
-      layout: device.createPipelineLayout({ bindGroupLayouts: [bindGroupLayout] }),
-      vertex: { module: shader, entryPoint: "vertex_main" },
+      layout: gpu.device.createPipelineLayout({
+        bindGroupLayouts: [bindGroupLayout],
+      }),
+      vertex: { module: vertex, entryPoint: "main" },
       fragment: {
-        module: shader,
-        entryPoint: "fragment_main",
-        targets: [{ format: context.gpu.presentationFormat }],
+        module: fragment,
+        entryPoint: "main",
+        targets: [{ format: gpu.presentationFormat }],
       },
       primitive: { topology: "triangle-list" },
     });
-    this.bindGroup = device.createBindGroup({
+    this.bindGroup = gpu.device.createBindGroup({
       label: "Volume rendering bind group",
       layout: bindGroupLayout,
       entries: [
@@ -147,7 +145,10 @@ export class VolumeRenderingModule implements EngineModule {
         },
         { binding: 1, resource: this.volumeTexture.view },
         { binding: 2, resource: sampler },
-        { binding: 3, resource: { buffer: this.parameterBuffer.buffer } },
+        {
+          binding: 3,
+          resource: { buffer: this.parameterBuffer.buffer },
+        },
       ],
     });
 
@@ -177,16 +178,19 @@ export class VolumeRenderingModule implements EngineModule {
     this.parameterBuffer.write(this.parameterFloats);
   }
 
-  public render(context: ModuleRenderContext): void {
+  public render({
+    commandEncoder,
+    colorView,
+  }: ModuleRenderContext): void {
     if (!this.pipeline || !this.bindGroup) {
       throw new Error("Volume Rendering rendered before initialization.");
     }
 
-    const pass = context.commandEncoder.beginRenderPass({
+    const pass = commandEncoder.beginRenderPass({
       label: "Volume ray-marching pass",
       colorAttachments: [
         {
-          view: context.colorView,
+          view: colorView,
           clearValue: { r: 0.01, g: 0.02, b: 0.04, a: 1 },
           loadOp: "clear",
           storeOp: "store",
@@ -197,10 +201,6 @@ export class VolumeRenderingModule implements EngineModule {
     pass.setBindGroup(0, this.bindGroup);
     pass.draw(3);
     pass.end();
-  }
-
-  public resize(_size: CanvasSize): void {
-    // The volume is resolution-independent; only the engine canvas changes.
   }
 
   public destroy(): void {

@@ -27,8 +27,8 @@ export interface EngineModule {
   readonly name: string;
 
   initialize(context: EngineContext): void | Promise<void>;
-  update(frame: FrameInfo): void;
+  update?(frame: FrameInfo): void;
   render(context: ModuleRenderContext): void;
-  resize(size: CanvasSize): void;
-  destroy(): void;
+  resize?(size: CanvasSize): void;
+  destroy?(): void;
 }

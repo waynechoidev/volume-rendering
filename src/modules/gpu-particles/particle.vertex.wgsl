@@ -31,7 +31,7 @@ struct VertexOutput {
 @group(0) @binding(2) var<uniform> params: SimulationParameters;
 
 @vertex
-fn vertex_main(
+fn main(
   @builtin(vertex_index) vertex_index: u32,
   @builtin(instance_index) instance_index: u32,
 ) -> VertexOutput {
@@ -77,15 +77,4 @@ fn vertex_main(
   output.color = color * (0.82 + clamp(speed * 0.12, 0.0, 0.35));
   output.radial = corner;
   return output;
-}
-
-@fragment
-fn fragment_main(input: VertexOutput) -> @location(0) vec4f {
-  let radius_squared = dot(input.radial, input.radial);
-  if (radius_squared > 1.0) {
-    discard;
-  }
-
-  let alpha = smoothstep(1.0, 0.15, radius_squared);
-  return vec4f(input.color * (0.65 + alpha * 0.55), alpha);
 }

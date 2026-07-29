@@ -32,40 +32,6 @@ export class GPUParticleModule implements EngineModule, ParticleSettings {
   private latestFrame: FrameInfo | undefined;
   private size: CanvasSize | undefined;
 
-  public async initialize(context: EngineContext): Promise<void> {
-    const { gpu, cameraUniforms, parameters } = context;
-    this.parameters = parameters;
-    this.simulation = await ParticleSimulation.create(gpu.device);
-    this.renderer = await ParticleRenderer.create(
-      gpu.device,
-      gpu.presentationFormat,
-      cameraUniforms.resource.buffer,
-      this.simulation.parameterBuffer.buffer,
-    );
-    this.recreateParticleResources();
-
-    const folder = parameters.register(this.name);
-    folder
-      .add(
-        this,
-        "particleCount",
-        [16_384, 32_768, 65_536, 131_072, 262_144],
-      )
-      .name("Particle count")
-      .onFinishChange(() => {
-        this.resourcesDirty = true;
-      });
-    folder.add(this, "gravity", 2, 20, 0.25).name("Black hole mass");
-    folder.add(this, "speed", 0, 3, 0.05).name("Simulation speed");
-    folder.add(this, "bounds", 2, 12, 0.25).name("Bounds");
-    folder.add(this, "pointSize", 0.002, 0.025, 0.001).name("Point size");
-    folder.add(this, "resetParticles").name("Reset particles");
-
-    if (window.matchMedia("(max-width: 700px)").matches) {
-      folder.close();
-    }
-  }
-
   public update(frame: FrameInfo): void {
     if (this.resourcesDirty) {
       this.recreateParticleResources();
@@ -104,6 +70,40 @@ export class GPUParticleModule implements EngineModule, ParticleSettings {
     this.parameters = undefined;
     this.latestFrame = undefined;
     this.size = undefined;
+  }
+
+  public async initialize(context: EngineContext): Promise<void> {
+    const { gpu, cameraUniforms, parameters } = context;
+    this.parameters = parameters;
+    this.simulation = await ParticleSimulation.create(gpu.device);
+    this.renderer = await ParticleRenderer.create(
+      gpu.device,
+      gpu.presentationFormat,
+      cameraUniforms.resource.buffer,
+      this.simulation.parameterBuffer.buffer,
+    );
+    this.recreateParticleResources();
+
+    const folder = parameters.register(this.name);
+    folder
+      .add(
+        this,
+        "particleCount",
+        [16_384, 32_768, 65_536, 131_072, 262_144],
+      )
+      .name("Particle count")
+      .onFinishChange(() => {
+        this.resourcesDirty = true;
+      });
+    folder.add(this, "gravity", 2, 20, 0.25).name("Black hole mass");
+    folder.add(this, "speed", 0, 3, 0.05).name("Simulation speed");
+    folder.add(this, "bounds", 2, 12, 0.25).name("Bounds");
+    folder.add(this, "pointSize", 0.002, 0.025, 0.001).name("Point size");
+    folder.add(this, "resetParticles").name("Reset particles");
+
+    if (window.matchMedia("(max-width: 700px)").matches) {
+      folder.close();
+    }
   }
 
   private recreateParticleResources(): void {
