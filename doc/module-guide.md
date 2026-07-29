@@ -2,15 +2,18 @@
 
 ## Imports
 
-Use the `@/` alias for all files under `src/`. This applies to TypeScript,
-module-local helpers, tests, WGSL source, and Markdown loaded with `?raw`.
+Use relative `./` imports for files colocated inside one module. This keeps the
+module portable when its directory is renamed:
 
 ```ts
 import { Module } from "@/engine/modules/Module";
-import fragmentSource from "@/modules/my-module/render.fragment.wgsl?raw";
+import fragmentSource from "./render.fragment.wgsl?raw";
+import { createInitialData } from "./initial-data";
 ```
 
-Do not use relative `./` or `../` imports in source files.
+Use the `@/` alias when crossing a source boundary, such as importing engine
+APIs from a module or importing modules from `main.ts`. Do not use `../` to
+reach into another module.
 
 ## Imperative research modules
 

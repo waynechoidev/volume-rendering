@@ -83,13 +83,13 @@ main -> modules -> engine
 
 Engine code must never import from `modules` or `main`.
 
-Use the `@/` alias for every import whose target is under `src/`, including
-files in the same directory and raw WGSL or Markdown imports. Do not introduce
-relative `./` or `../` source imports.
+Use relative `./` imports for files owned by the same module directory,
+including module-local helpers, WGSL, and Markdown. Use the `@/` alias when an
+import crosses a source boundary, such as `main` importing a module or a module
+importing an engine API. Do not use `../` imports to reach another module.
 
-Examples and research implementations both belong in `modules`. Examples such
-as Triangle and Engine Diagnostics validate generic behavior but must not become
-hidden engine dependencies.
+Examples and research implementations both belong in `modules`. Validation or
+educational modules must not become hidden engine dependencies.
 
 The reusable application host belongs in `engine/application`. Root `main.ts`
 only selects and registers what runs. It must remain thin and contain no
@@ -97,8 +97,8 @@ rendering algorithm.
 
 Register runnable module classes in the explicit `modules` list in `src/main.ts`.
 Do not automatically expose every filesystem entry under `src/modules/`.
-Place the most recently added runnable module first in the list; the first
-entry is the default module.
+Order modules by their intended presentation sequence; the first entry is the
+default module. Progressive tutorials should use ascending step order.
 Switching modules must destroy the previous module and its owned resources
 before activating the next one.
 
