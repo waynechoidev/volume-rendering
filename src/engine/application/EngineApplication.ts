@@ -60,6 +60,7 @@ export class EngineApplication {
   private readonly controlsButton: HTMLButtonElement;
   private readonly readmeButton: HTMLButtonElement;
   private readonly readmeDialog: HTMLDialogElement;
+  private readonly readmeBody: HTMLElement;
   private readonly readmeLanguageButton: HTMLButtonElement;
   private readonly readmeCloseButton: HTMLButtonElement;
   private readonly readmeContent: HTMLElement;
@@ -173,8 +174,8 @@ export class EngineApplication {
       "click",
       this.handleReadmeBackdropClick,
     );
-    const readmeBody = document.createElement("div");
-    readmeBody.className = "readme-dialog__body";
+    this.readmeBody = document.createElement("div");
+    this.readmeBody.className = "readme-dialog__body";
     const readmeActions = document.createElement("div");
     readmeActions.className = "readme-dialog__actions";
     this.readmeLanguageButton = document.createElement("button");
@@ -194,8 +195,8 @@ export class EngineApplication {
     );
     this.readmeContent = document.createElement("article");
     this.readmeContent.className = "readme-content";
-    readmeBody.append(readmeActions, this.readmeContent);
-    this.readmeDialog.append(readmeBody);
+    this.readmeBody.append(readmeActions, this.readmeContent);
+    this.readmeDialog.append(this.readmeBody);
 
     this.modulePicker.append(this.moduleSelect, this.readmeButton);
     if (repositoryLink) {
@@ -305,6 +306,7 @@ export class EngineApplication {
     this.activeReadme = COMMON_CONTROLS;
     this.renderActiveReadme();
     this.readmeDialog.showModal();
+    this.resetReadmeScroll();
   };
 
   private readonly openReadme = (): void => {
@@ -313,6 +315,7 @@ export class EngineApplication {
     this.activeReadme = entry.readme;
     this.renderActiveReadme();
     this.readmeDialog.showModal();
+    this.resetReadmeScroll();
   };
 
   private readonly toggleReadmeLanguage = (): void => {
@@ -354,12 +357,8 @@ export class EngineApplication {
       "aria-label",
       `View README in ${nextLanguage.toUpperCase()}`,
     );
-    this.readmeCloseButton.textContent =
-      language === "ko" ? "닫기" : "Close";
-    this.readmeCloseButton.setAttribute(
-      "aria-label",
-      language === "ko" ? "README 닫기" : "Close README",
-    );
+    this.readmeCloseButton.textContent = "Close";
+    this.readmeCloseButton.setAttribute("aria-label", "Close README");
     this.readmeContent.lang = language;
     this.readmeContent.innerHTML = renderReadme(markdown);
   }
@@ -367,6 +366,15 @@ export class EngineApplication {
   private readonly closeReadme = (): void => {
     this.readmeDialog.close();
   };
+
+  private resetReadmeScroll(): void {
+    const scrollToStart = (): void => {
+      this.readmeBody.scrollTo({ top: 0, left: 0, behavior: "auto" });
+    };
+
+    scrollToStart();
+    requestAnimationFrame(scrollToStart);
+  }
 
   private readonly handleReadmeBackdropClick = (event: MouseEvent): void => {
     if (event.target === this.readmeDialog) {
@@ -380,6 +388,8 @@ export class EngineApplication {
     if (!entry || !engine || this.destroyed) {
       return;
     }
+    this.activeReadme = undefined;
+    this.resetReadmeScroll();
     this.readmeButton.hidden = !entry.readme;
 
     const version = ++this.switchVersion;
