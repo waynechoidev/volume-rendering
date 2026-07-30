@@ -56,8 +56,8 @@ export class EngineApplication {
   private readonly modulePicker: HTMLElement;
   private readonly modulePickerToggle: HTMLButtonElement;
   private readonly moduleSelect: HTMLSelectElement;
-  private readonly resetViewButton: HTMLButtonElement;
   private readonly controlsButton: HTMLButtonElement;
+  private readonly helpButton: HTMLButtonElement;
   private readonly readmeButton: HTMLButtonElement;
   private readonly readmeDialog: HTMLDialogElement;
   private readonly readmeBody: HTMLElement;
@@ -69,6 +69,7 @@ export class EngineApplication {
   private activeModule: EngineModule | undefined;
   private activeReadme: ReadmeSource | undefined;
   private readmeLanguage: ReadmeLanguage;
+  private readmeCloseTimer: number | undefined;
   private destroyed = false;
   private switchVersion = 0;
 
@@ -135,28 +136,23 @@ export class EngineApplication {
     this.controlsButton = document.createElement("button");
     this.controlsButton.className = "application-button controls-button";
     this.controlsButton.type = "button";
-    this.controlsButton.setAttribute("aria-label", "Open controls");
+    this.controlsButton.setAttribute("aria-label", "Open parameters");
+    this.controlsButton.setAttribute("aria-expanded", "false");
     this.controlsButton.title = "Controls";
     this.controlsButton.innerHTML = `
       <svg viewBox="0 0 24 24" aria-hidden="true">
         <path d="M4 7h10m4 0h2M4 17h2m4 0h10M14 4v6M6 14v6" />
       </svg>
     `;
-    this.controlsButton.addEventListener("click", this.openControls);
+    this.controlsButton.addEventListener("click", this.toggleParameters);
 
-    this.resetViewButton = document.createElement("button");
-    this.resetViewButton.className =
-      "application-button icon-button reset-view-button";
-    this.resetViewButton.type = "button";
-    this.resetViewButton.setAttribute("aria-label", "Reset camera view");
-    this.resetViewButton.title = "Reset view";
-    this.resetViewButton.innerHTML = `
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <circle cx="12" cy="12" r="6" />
-        <path d="M12 3v3M12 18v3M3 12h3M18 12h3" />
-      </svg>
-    `;
-    this.resetViewButton.addEventListener("click", this.resetView);
+    this.helpButton = document.createElement("button");
+    this.helpButton.className = "application-button help-button";
+    this.helpButton.type = "button";
+    this.helpButton.textContent = "?";
+    this.helpButton.setAttribute("aria-label", "Open controls guide");
+    this.helpButton.title = "Controls guide";
+    this.helpButton.addEventListener("click", this.openControlsGuide);
 
     this.readmeButton = document.createElement("button");
     this.readmeButton.className = "application-button";
@@ -174,6 +170,7 @@ export class EngineApplication {
       "click",
       this.handleReadmeBackdropClick,
     );
+    this.readmeDialog.addEventListener("cancel", this.handleReadmeCancel);
     this.readmeBody = document.createElement("div");
     this.readmeBody.className = "readme-dialog__body";
     const readmeActions = document.createElement("div");
@@ -207,7 +204,7 @@ export class EngineApplication {
       this.canvas,
       this.status,
       this.modulePicker,
-      this.resetViewButton,
+      this.helpButton,
       this.controlsButton,
       this.readmeDialog,
     );
@@ -230,10 +227,12 @@ export class EngineApplication {
       this.engine = await Engine.create(this.canvas, {
         maxPixelRatio: this.maxPixelRatio,
         onError: this.showError,
+        onParametersClosed: this.handleParametersClosed,
         uiContainer: this.root,
       });
-      this.root.querySelector(".engine-stats")?.append(this.controlsButton);
-
+      this.root
+        .querySelector(".engine-stats")
+        ?.append(this.helpButton, this.controlsButton);
       this.moduleSelect.selectedIndex = 0;
       await this.switchModule(0);
     } catch (error) {
@@ -256,8 +255,8 @@ export class EngineApplication {
       "click",
       this.toggleModulePicker,
     );
-    this.resetViewButton.removeEventListener("click", this.resetView);
-    this.controlsButton.removeEventListener("click", this.openControls);
+    this.controlsButton.removeEventListener("click", this.toggleParameters);
+    this.helpButton.removeEventListener("click", this.openControlsGuide);
     this.readmeButton.removeEventListener("click", this.openReadme);
     this.readmeLanguageButton.removeEventListener(
       "click",
@@ -268,6 +267,10 @@ export class EngineApplication {
       "click",
       this.handleReadmeBackdropClick,
     );
+    this.readmeDialog.removeEventListener("cancel", this.handleReadmeCancel);
+    if (this.readmeCloseTimer !== undefined) {
+      window.clearTimeout(this.readmeCloseTimer);
+    }
     this.engine?.destroy();
     this.engine = undefined;
     this.activeModule = undefined;
@@ -288,10 +291,6 @@ export class EngineApplication {
     void this.switchModule(this.moduleSelect.selectedIndex);
   };
 
-  private readonly resetView = (): void => {
-    this.engine?.resetCamera();
-  };
-
   private readonly toggleModulePicker = (): void => {
     const collapsed = this.modulePicker.dataset.collapsed !== "true";
     this.modulePicker.dataset.collapsed = String(collapsed);
@@ -302,10 +301,26 @@ export class EngineApplication {
     );
   };
 
-  private readonly openControls = (): void => {
+  private readonly toggleParameters = (): void => {
+    const visible = this.engine?.toggleParameters() ?? false;
+    this.controlsButton.hidden = visible;
+    this.controlsButton.setAttribute("aria-expanded", String(visible));
+    this.controlsButton.setAttribute(
+      "aria-label",
+      visible ? "Close parameters" : "Open parameters",
+    );
+  };
+
+  private readonly handleParametersClosed = (): void => {
+    this.controlsButton.hidden = false;
+    this.controlsButton.setAttribute("aria-expanded", "false");
+    this.controlsButton.setAttribute("aria-label", "Open parameters");
+  };
+
+  private readonly openControlsGuide = (): void => {
     this.activeReadme = COMMON_CONTROLS;
     this.renderActiveReadme();
-    this.readmeDialog.showModal();
+    this.showReadmeDialog();
     this.resetReadmeScroll();
   };
 
@@ -314,7 +329,7 @@ export class EngineApplication {
     if (!entry?.readme) return;
     this.activeReadme = entry.readme;
     this.renderActiveReadme();
-    this.readmeDialog.showModal();
+    this.showReadmeDialog();
     this.resetReadmeScroll();
   };
 
@@ -364,8 +379,34 @@ export class EngineApplication {
   }
 
   private readonly closeReadme = (): void => {
-    this.readmeDialog.close();
+    if (
+      !this.readmeDialog.open ||
+      this.readmeDialog.classList.contains("dialog--closing")
+    ) {
+      return;
+    }
+    this.readmeDialog.classList.add("dialog--closing");
+    const duration = window.matchMedia("(prefers-reduced-motion: reduce)")
+      .matches
+      ? 0
+      : 280;
+    this.readmeCloseTimer = window.setTimeout(() => {
+      this.readmeDialog.close();
+      this.readmeDialog.classList.remove("dialog--closing");
+      this.readmeCloseTimer = undefined;
+    }, duration);
   };
+
+  private showReadmeDialog(): void {
+    if (this.readmeCloseTimer !== undefined) {
+      window.clearTimeout(this.readmeCloseTimer);
+      this.readmeCloseTimer = undefined;
+    }
+    this.readmeDialog.classList.remove("dialog--closing");
+    if (!this.readmeDialog.open) {
+      this.readmeDialog.showModal();
+    }
+  }
 
   private resetReadmeScroll(): void {
     const scrollToStart = (): void => {
@@ -380,6 +421,11 @@ export class EngineApplication {
     if (event.target === this.readmeDialog) {
       this.readmeDialog.close();
     }
+  };
+
+  private readonly handleReadmeCancel = (event: Event): void => {
+    event.preventDefault();
+    this.closeReadme();
   };
 
   private async switchModule(index: number): Promise<void> {
@@ -407,7 +453,7 @@ export class EngineApplication {
         engine.removeModule(this.activeModule.name);
       }
 
-      engine.resetCamera();
+      engine.useModuleCamera(nextModule.initialCameraView);
       await engine.addModule(nextModule);
       this.activeModule = nextModule;
       this.status.classList.remove("status--error");

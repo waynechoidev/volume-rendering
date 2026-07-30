@@ -3,6 +3,7 @@ import { quat, vec3 } from "gl-matrix";
 import type { FrameInfo } from "@/engine/core/FrameLoop";
 import type { InputManager } from "@/engine/input/InputManager";
 import type { PerspectiveCamera } from "@/engine/camera/PerspectiveCamera";
+import type { ModuleCameraView } from "@/engine/core/EngineModule";
 
 const INITIAL_YAW = 0.57;
 const INITIAL_PITCH = 0.37;
@@ -10,6 +11,12 @@ const INITIAL_DISTANCE = 6.8;
 const BASE_OFFSET = vec3.fromValues(0, 0, 1);
 const BASE_RIGHT = vec3.fromValues(1, 0, 0);
 const BASE_UP = vec3.fromValues(0, 1, 0);
+const DEFAULT_VIEW: ModuleCameraView = {
+  yaw: INITIAL_YAW,
+  pitch: INITIAL_PITCH,
+  distance: INITIAL_DISTANCE,
+  target: [0, 0.5, 0],
+};
 
 export class OrbitCameraController {
   public rotationSpeed = 0.006;
@@ -25,6 +32,7 @@ export class OrbitCameraController {
   private readonly offset = vec3.create();
   private readonly right = vec3.create();
   private readonly up = vec3.create();
+  private resetView: ModuleCameraView = DEFAULT_VIEW;
 
   public constructor(
     private readonly camera: PerspectiveCamera,
@@ -81,12 +89,21 @@ export class OrbitCameraController {
     this.updateCamera();
   }
 
-  public reset(): void {
-    this.resetOrientation();
-    this.distance = INITIAL_DISTANCE;
-    this.camera.target[0] = 0;
-    this.camera.target[1] = 0.5;
-    this.camera.target[2] = 0;
+  public useView(view?: ModuleCameraView): void {
+    this.reset(view ?? DEFAULT_VIEW);
+  }
+
+  public reset(view: ModuleCameraView = this.resetView): void {
+    this.resetView = view;
+    this.resetOrientation(view.yaw, view.pitch);
+    this.distance = Math.min(
+      this.maxDistance,
+      Math.max(this.minDistance, view.distance),
+    );
+    const target = view.target ?? DEFAULT_VIEW.target!;
+    this.camera.target[0] = target[0];
+    this.camera.target[1] = target[1];
+    this.camera.target[2] = target[2];
     this.updateCamera();
   }
 
@@ -102,10 +119,13 @@ export class OrbitCameraController {
     this.camera.setLookAt(this.position, this.camera.target, this.up);
   }
 
-  private resetOrientation(): void {
+  private resetOrientation(
+    yaw = DEFAULT_VIEW.yaw,
+    pitch = DEFAULT_VIEW.pitch,
+  ): void {
     quat.identity(this.orientation);
-    quat.rotateY(this.orientation, this.orientation, INITIAL_YAW);
-    quat.rotateX(this.orientation, this.orientation, -INITIAL_PITCH);
+    quat.rotateY(this.orientation, this.orientation, yaw);
+    quat.rotateX(this.orientation, this.orientation, -pitch);
     quat.normalize(this.orientation, this.orientation);
   }
 }

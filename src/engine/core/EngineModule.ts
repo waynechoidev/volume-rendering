@@ -25,8 +25,16 @@ export interface ModuleRenderContext {
   readonly frame: FrameInfo;
 }
 
+export interface ModuleCameraView {
+  readonly yaw: number;
+  readonly pitch: number;
+  readonly distance: number;
+  readonly target?: readonly [number, number, number];
+}
+
 export interface EngineModule {
   readonly name: string;
+  readonly initialCameraView?: ModuleCameraView;
 
   initialize(context: EngineContext): void | Promise<void>;
   render(context: ModuleRenderContext): void;

@@ -49,6 +49,7 @@ An `EngineModule` implements:
 ```ts
 interface EngineModule {
   readonly name: string;
+  readonly initialCameraView?: ModuleCameraView;
   initialize(context: EngineContext): void | Promise<void>;
   render(context: ModuleRenderContext): void;
   resize?(size: CanvasSize): void;
@@ -72,6 +73,24 @@ Exceptions from setup, resize, frame, and teardown are wrapped in
 not repeat initialization or resize guards around their pipelines, bind
 groups, and size-dependent textures.
 
+## Camera defaults
+
+A module may provide its initial orbit-camera view without owning a separate
+camera system:
+
+```ts
+readonly initialCameraView = {
+  yaw: Math.PI / 12,
+  pitch: Math.PI / 12,
+  distance: 5,
+  target: [0, 0, 0] as const,
+};
+```
+
+The application applies this view whenever the module becomes active. The
+shared `Reset` action restores the same module-specific view. Omit the property
+to use the engine default.
+
 ## EngineContext
 
 `initialize` receives shared services:
@@ -84,6 +103,44 @@ groups, and size-dependent textures.
 
 Modules must not create another device, frame loop, global input system, or debug
 UI.
+
+## Runtime parameters
+
+Register module-owned mutable values during `setup`:
+
+```ts
+private readonly settings = {
+  exposure: 1,
+  enabled: true,
+};
+
+setup() {
+  const folder = this.parameters.register(this.name);
+  folder.add(this.settings, "exposure", 0, 4, 0.01);
+  folder.add(this.settings, "enabled");
+}
+```
+
+The engine places registered folders in the shared Controls dialog. Values may
+represent GPU parameters or CPU-side runtime state; the module decides which
+values are useful to expose and supplies their range, step, and options. An
+empty registry displays an empty-state message while retaining `Reset` because
+camera reset remains available.
+
+The shared `Reset` action restores the active module's camera view and every
+registered value to its captured default. `ParameterFolder.add()` captures the
+value present when it is called. If setup modifies defaults afterward, call
+`folder.captureDefaults()` once the desired initial state is ready.
+
+For volume-data experiments, the registry also provides reusable histogram
+editors:
+
+- `addTransferFunction(options)` for scalar intensity bands.
+- `addTransferFunction2D(options)` for intensity/gradient regions.
+
+Both editors participate in the shared reset operation. Their `onChange`
+callback should update the module's CPU-side transfer data and schedule any
+required GPU upload; the engine does not interpret those values.
 
 ## Frame and render contexts
 

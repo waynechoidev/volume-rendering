@@ -3,7 +3,11 @@ import {
   canvasSizesMatch,
   type CanvasSize,
 } from "@/engine/core/CanvasSize";
-import type { EngineContext, EngineModule } from "@/engine/core/EngineModule";
+import type {
+  EngineContext,
+  EngineModule,
+  ModuleCameraView,
+} from "@/engine/core/EngineModule";
 import { FrameLoop, type FrameInfo } from "@/engine/core/FrameLoop";
 import { GPUContext } from "@/engine/core/GPUContext";
 import { CameraUniforms } from "@/engine/camera/CameraUniforms";
@@ -17,6 +21,7 @@ import { Stats } from "@/engine/ui/Stats";
 export interface EngineOptions {
   readonly maxPixelRatio?: number;
   readonly onError?: (error: Error) => void;
+  readonly onParametersClosed?: () => void;
   readonly uiContainer?: HTMLElement;
 }
 
@@ -47,6 +52,7 @@ export class Engine {
     {
       maxPixelRatio = 2,
       onError = console.error,
+      onParametersClosed = () => {},
       uiContainer = document.body,
     }: EngineOptions,
   ) {
@@ -56,7 +62,11 @@ export class Engine {
     this.cameraUniforms = new CameraUniforms(gpu.device);
     this.shaders = new ShaderLibrary(gpu.device);
     this.orbitController = new OrbitCameraController(this.camera, this.input);
-    this.debugUI = new DebugUI(uiContainer);
+    this.debugUI = new DebugUI(
+      uiContainer,
+      this.resetControls,
+      onParametersClosed,
+    );
     this.stats = new Stats(uiContainer, gpu.adapter);
     this.context = {
       gpu: this.gpu,
@@ -97,12 +107,6 @@ export class Engine {
       );
     });
 
-    const cameraFolder = this.debugUI.parameters.register("Camera");
-    cameraFolder
-      .add(this.camera, "fieldOfViewDegrees", 20, 100, 1)
-      .name("Field of view")
-      .onChange(() => this.camera.updateMatrices());
-    cameraFolder.add(this.orbitController, "reset").name("Reset view");
   }
 
   public static async create(
@@ -164,10 +168,25 @@ export class Engine {
     this.debugUI.parameters.remove(name);
   }
 
+  public useModuleCamera(view?: ModuleCameraView): void {
+    this.assertActive();
+    this.orbitController.useView(view);
+  }
+
   public resetCamera(): void {
     this.assertActive();
     this.orbitController.reset();
   }
+
+  public toggleParameters(): boolean {
+    this.assertActive();
+    return this.debugUI.toggle();
+  }
+
+  private readonly resetControls = (): void => {
+    this.orbitController.reset();
+    this.debugUI.parameters.resetAll();
+  };
 
   public start(): void {
     this.assertActive();
@@ -204,8 +223,8 @@ export class Engine {
     this.modules.length = 0;
     this.cameraUniforms.destroy();
     this.input.destroy();
-    this.stats.destroy();
     this.debugUI.destroy();
+    this.stats.destroy();
     this.gpu.destroy();
   }
 

@@ -116,3 +116,50 @@ DPR and maximum texture-size limits before calling the module.
 Use shared input state. Do not attach mouse-only DOM listeners. Keep controls
 usable at narrow widths and choose conservative particle counts, texture sizes,
 and memory use for coarse-pointer mobile devices.
+
+## Runtime parameters
+
+Create parameter folders in `setup` and keep their backing objects as module
+fields:
+
+```ts
+private readonly settings = {
+  speed: 1,
+  particleCount: 65_536,
+  mode: "Orbit",
+};
+
+setup() {
+  const folder = this.parameters.register(this.name);
+  folder.add(this.settings, "speed", 0, 4, 0.01);
+  folder.add(this.settings, "particleCount", 1_024, 262_144, 1_024);
+  folder.add(this.settings, "mode", ["Orbit", "Flow"]);
+}
+```
+
+Registration controls only UI exposure. The settings remain ordinary mutable
+module state and may drive uniform uploads, dispatch sizes, resource rebuilds,
+or CPU-side decisions. Keep resource rebuilds explicit in controller
+`onChange`/`onFinishChange` callbacks rather than hiding them in the engine.
+
+`Reset` restores all values captured by `folder.add` and resets the shared
+camera to the active module's `initialCameraView`. Use
+`folder.captureDefaults()` after applying a preset during setup when the
+post-preset values, rather than the field initializers, should become the reset
+target.
+
+Do not register camera position or orientation as module parameters. Declare an
+optional initial view instead:
+
+```ts
+readonly initialCameraView = {
+  yaw: Math.PI / 12,
+  pitch: Math.PI / 12,
+  distance: 5,
+  target: [0, 0, 0] as const,
+};
+```
+
+Modules without adjustable values should not add placeholder controls. The
+Controls dialog handles an empty registry and still exposes `Reset` for the
+camera.
