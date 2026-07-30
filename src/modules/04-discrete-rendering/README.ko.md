@@ -1,6 +1,6 @@
-# Volume 04 — Discrete Volume Rendering
+# 04 — Discrete Volume Rendering
 
-## Goal
+## 목표
 
 medium의 density가 이제 공간에 따라
 \(\sigma(\mathbf{r}(t))\)로 변합니다. stage 03의 균질한 닫힌 형태의
@@ -13,7 +13,13 @@ medium의 density가 이제 공간에 따라
 ellipsoid)이며 3D texture와 lighting은
 아직 사용하지 않습니다.
 
-## 1. Continuous equation
+![Ray를 segment로 나누고 midpoint에서 sampling하여 누적하는 과정](./discrete-ray-marching.svg)
+
+교차 구간을 같은 길이의 segment로 나누고 각 segment의 midpoint에서
+density를 읽습니다. sample은 camera에 가까운 순서대로 color와
+transmittance에 누적됩니다.
+
+## 1. 연속 방정식
 
 ray가 다음과 같을 때:
 
@@ -45,7 +51,7 @@ T(t)=
 \(\sigma(t)\)의 단위는 거리의 역수(inverse distance)입니다. distance를
 곱하면 무차원 광학적 깊이(dimensionless optical depth)가 됩니다.
 
-## 2. Piecewise-constant approximation
+## 2. 구간별 상수 근사(Piecewise-constant Approximation)
 
 ray를 \(N\)개 segment로 나눕니다. segment \(i\)의 길이는:
 
@@ -67,7 +73,7 @@ T_{\mathrm{segment},i}=e^{-\sigma_i\delta_i}.
 \alpha_i=1-e^{-\sigma_i\delta_i}.
 \]
 
-## 3. Transmittance before each sample
+## 3. 각 Sample에 도달하기 전의 투과율
 
 sample \(i\)에 도달하려면 이전 모든 segment를 통과해야 합니다.
 
@@ -99,7 +105,7 @@ w_i=T_i\alpha_i.
 T_{N+1}\mathbf{c}_{bg}.
 \]
 
-## 4. Front-to-back recurrence
+## 4. 앞에서 뒤로 누적하기
 
 shader는 sample마다 곱(product)을 다시 계산하지 않고 하나의 누적
 값(running value)을 유지합니다.
@@ -117,7 +123,7 @@ transmittance *= 1.0 - alpha;
 
 update 전 `transmittance`는 \(T_i\), update 후에는 \(T_{i+1}\)입니다.
 
-## 5. Midpoint sampling
+## 5. 중점 Sampling
 
 uniform step count를 사용하면:
 
@@ -140,7 +146,7 @@ let position = origin + direction * distance;
 편향(bias)이 작습니다. 하지만 \(\delta\)가 크면 얇은 특징(feature)을 놓칠
 수 있습니다.
 
-## 6. Analytic density field
+## 6. 해석적 Density Field
 
 다음 타원체 좌표(ellipsoidal coordinate)를 사용합니다.
 
@@ -168,7 +174,7 @@ return
 
 이 함수는 적분(integration) 학습에 집중하도록 의도적으로 단순하게 구성했습니다.
 
-## Equation-to-code table
+## 수식과 코드의 대응
 
 | Equation | WGSL |
 | --- | --- |
@@ -180,7 +186,14 @@ return
 | \(\mathbf{c}_i\) | `sample_color` |
 | \(\sum T_i\alpha_i\mathbf{c}_i\) | `radiance` |
 
-## Numerical behavior
+## Parameters
+
+- `Ray-march steps`: 중점 sample 개수
+- `Density`: 해석적 density field에 적용하는 배수
+- `Absorption`: 각 segment에 사용하는 absorption coefficient
+- `Volume size`: box의 half-extent이며 공통 기본값은 \(2\)
+
+## 수치적 특성
 
 - step을 늘리면 적분 오차(integration error)가 줄지만 fragment 작업량(workload)은 선형으로
   증가합니다.

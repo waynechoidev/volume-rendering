@@ -4,22 +4,33 @@ struct CameraUniforms {
   position: vec4f,
 };
 
+struct VolumeParameters {
+  half_extent: f32,
+  _padding_0: f32,
+  _padding_1: f32,
+  _padding_2: f32,
+};
+
 struct RayInterval {
   near: f32,
   far: f32,
 };
 
 @group(0) @binding(0) var<uniform> camera: CameraUniforms;
+@group(0) @binding(1) var<uniform> params: VolumeParameters;
 
 fn intersect_box(origin: vec3f, direction: vec3f) -> RayInterval {
+  let half_extent = params.half_extent;
+  let box_min = vec3f(-half_extent);
+  let box_max = vec3f(half_extent);
   let inverse_direction = 1.0 / direction;
-  let t0 = (-vec3f(3.2) - origin) * inverse_direction;
-  let t1 = (vec3f(3.2) - origin) * inverse_direction;
-  let smaller = min(t0, t1);
-  let larger = max(t0, t1);
+  let t0 = (box_min - origin) * inverse_direction;
+  let t1 = (box_max - origin) * inverse_direction;
+  let axis_near = min(t0, t1);
+  let axis_far = max(t0, t1);
   return RayInterval(
-    max(max(smaller.x, smaller.y), smaller.z),
-    min(min(larger.x, larger.y), larger.z),
+    max(max(axis_near.x, axis_near.y), axis_near.z),
+    min(min(axis_far.x, axis_far.y), axis_far.z),
   );
 }
 

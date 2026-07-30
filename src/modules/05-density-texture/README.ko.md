@@ -1,6 +1,6 @@
-# Volume 05 — Density Texture
+# 05 — Density Texture
 
-## Goal
+## 목표
 
 stage 04는 WGSL 함수에서 density를 직접 계산했습니다. 이 단계는 sampling된
 스칼라 field(sampled scalar field)를 3D grid에 저장하고 필터링 가능한
@@ -24,7 +24,7 @@ T_{N+1}\mathbf{c}_{bg}.
 
 \(\sigma_i\)의 표현(representation)만 변경됩니다.
 
-## 1. Continuous position to texture coordinate
+## 1. 연속적인 Position을 Texture Coordinate로 변환
 
 world-space box의 범위는:
 
@@ -47,7 +47,9 @@ fn world_to_texture(position: vec3f) -> vec3f {
 }
 ```
 
-## 2. Building the voxel data
+![World-space position을 정규화된 3D texture coordinate로 변환](./texture-coordinate-volume.svg)
+
+## 2. Voxel Data 만들기
 
 `density-data.ts`는 \(48^3\) grid를 만듭니다. voxel \((x,y,z)\)의
 중심(center)은 \([-1,1]^3\)으로 mapping됩니다.
@@ -82,7 +84,7 @@ v=\operatorname{round}(255\rho).
 sampling할 때 WebGPU는 byte를 대략 \(v/255\)로 변환합니다. 양자화
 오차(quantization error)는 최대 약 \(1/(2\cdot255)\)입니다.
 
-## 3. Uploading a 3D texture
+## 3. 3D Texture Upload
 
 ```ts
 this.volumeTexture = new TextureResource(this.device, {
@@ -110,10 +112,12 @@ this.volumeTexture = new TextureResource(this.device, {
 한 byte가 voxel 하나, 한 row가 \(x\) scanline 하나를 저장하며
 `rowsPerImage`는 다음 \(z\) slice로 이동합니다.
 
-## 4. Trilinear filtering
+## 4. 삼선형 필터링(Trilinear Filtering)
 
 인접한 여덟 voxel(neighboring voxel) 사이의 coordinate에서 linear sampler는
 세 번의 선형 보간(linear interpolation)을 수행합니다. 1D에서는:
+
+![한 sample을 둘러싼 여덟 voxel 값을 결합하는 삼선형 필터링](./trilinear-filtering.svg)
 
 \[
 \operatorname{lerp}(a,b,f)=(1-f)a+fb.
@@ -132,7 +136,7 @@ let density = textureSampleLevel(
 
 필터링(filtering)이 없으면 \(48^3\) grid가 voxel block으로 보입니다.
 
-## 5. Bindings
+## 5. Binding 구성
 
 | Binding | Resource | Purpose |
 | --- | --- | --- |
@@ -143,17 +147,19 @@ let density = textureSampleLevel(
 
 TypeScript의 `VolumeParameters` storage는 16 bytes입니다.
 
-```text
-0..3   step_count: u32
-4..7   density_scale: f32
-8..11  absorption: f32
-12..15 half_extent: f32
-```
+![16-byte VolumeParameters uniform의 memory layout](./uniform-memory-layout.svg)
 
 `Uint32Array`와 `Float32Array`는 같은 `ArrayBuffer`를 바라보므로 각 field를
 WGSL에 선언된 type으로 기록할 수 있습니다.
 
-## 6. What remains deliberately absent
+## 6. Parameters
+
+- `Ray-march steps`: 중점 texture sample 개수
+- `Density`: sampling한 density에 적용하는 배수
+- `Absorption`: 각 segment에 사용하는 absorption coefficient
+- `Volume size`: box의 half-extent이며 공통 기본값은 \(2\)
+
+## 7. 이 단계에서 제외한 기능
 
 - density 기울기(gradient)와 표면 법선(surface normal) 없음
 - light direction 없음

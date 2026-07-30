@@ -9,7 +9,7 @@ export class VolumeRenderingModule extends Module {
 
   public density = 0.42;
   public absorption = 1.2;
-  public volumeSize = 3.2;
+  public volumeSize = 2;
 
   private pipeline!: GPURenderPipeline;
   private bindGroup!: GPUBindGroup;

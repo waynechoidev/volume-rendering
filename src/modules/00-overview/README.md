@@ -3,15 +3,16 @@
 ## Abstract
 
 This project builds a WebGPU volume renderer from the camera-ray foundation to
-a lit three-dimensional density field. For every screen pixel, the renderer
+a 16-bit CT volume with an interactive transfer function. For every screen pixel, the renderer
 reconstructs a world-space ray, limits it to a finite volume, samples density
 along the bounded interval, and accumulates color and transmittance using the
 discrete volume rendering equation.
 
-The final result stores a connected cloud-like density field in a 3D texture.
-Density gradients provide local shape cues, while a secondary march toward the
-light estimates self-shadowing. The implementation keeps the ray construction,
-intersection, density representation, integration, and lighting stages visible
+The final result stores the Aneurism angiography dataset in an `r8unorm` 3D
+texture, precomputes its gradient field, and maps intensity plus gradient
+magnitude to vascular color and extinction. The
+implementation keeps ray construction, intersection, density representation,
+integration, texture sampling, and transfer-function stages visible
 so each part can be studied and modified independently.
 
 ## Implementation Steps
@@ -47,9 +48,15 @@ Move the scalar density field into a filterable 3D texture. World-space sample
 positions are mapped to texture coordinates, and trilinear filtering provides
 a continuous density estimate between voxels.
 
-### 06 — Density Lighting
+### 06 — Aneurism 1D Transfer Function
 
-Estimate a local pseudo-normal from the density gradient and march a short
-secondary ray toward the light to approximate optical depth and self-shadowing.
-These terms shade the connected density field without changing the underlying
-camera-ray compositing equation.
+Load the isotropic \(256^3\) Aneurism angiography dataset and map its scalar
+intensity to vessel color and extinction with editable 1D histogram bands.
+This exposes the ambiguity of classifying boundaries and interiors by the same
+single value.
+
+### 07 — Aneurism 2D Transfer Function
+
+Keep the same Aneurism volume, precompute gradient direction and magnitude
+with a compute shader, then select sparse vessel boundaries and dense
+contrast-filled cores in an intensity–gradient joint histogram.

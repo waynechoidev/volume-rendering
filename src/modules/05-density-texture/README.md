@@ -1,4 +1,4 @@
-# Volume 05 — Density Texture
+# 05 — Density Texture
 
 ## Goal
 
@@ -46,6 +46,8 @@ fn world_to_texture(position: vec3f) -> vec3f {
   return position / (2.0 * params.half_extent) + 0.5;
 }
 ```
+
+![Mapping a world-space position to a normalized 3D texture coordinate](./texture-coordinate-volume.svg)
 
 ## 2. Building the voxel data
 
@@ -114,6 +116,8 @@ One byte stores one voxel, one row stores one \(x\) scanline, and
 For a coordinate between eight neighboring voxels, a linear sampler performs
 three nested linear interpolations. In one dimension:
 
+![Trilinear filtering blends the eight voxel values around one sample](./trilinear-filtering.svg)
+
 \[
 \operatorname{lerp}(a,b,f)=(1-f)a+fb.
 \]
@@ -143,17 +147,19 @@ Without filtering, the \(48^3\) grid would appear as visible voxel blocks.
 
 The TypeScript `VolumeParameters` storage is 16 bytes:
 
-```text
-0..3   step_count: u32
-4..7   density_scale: f32
-8..11  absorption: f32
-12..15 half_extent: f32
-```
+![Memory layout of the 16-byte VolumeParameters uniform](./uniform-memory-layout.svg)
 
 `Uint32Array` and `Float32Array` are views of the same `ArrayBuffer`, so each
 field is written with the type declared by WGSL.
 
-## 6. What remains deliberately absent
+## 6. Parameters
+
+- `Ray-march steps`: number of midpoint texture samples.
+- `Density`: multiplier applied to the sampled density.
+- `Absorption`: absorption coefficient used by each segment.
+- `Volume size`: box half-extent, with a shared default of \(2\).
+
+## 7. What remains deliberately absent
 
 - No density gradient or surface normal.
 - No light direction.

@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 430" role="img" aria-labelledby="title desc">
+  <title id="title">Slab intervals along a ray</title>
+  <desc id="desc">The x, y, and z slab intervals overlap from t equals 4 through t equals 7.</desc>
+  <defs>
+    <style>
+      .title { fill: #e2e8f0; font: 20px ui-monospace, SFMono-Regular, Menlo, monospace; font-weight: 700; }
+      .label { fill: #e2e8f0; font: 18px ui-monospace, SFMono-Regular, Menlo, monospace; }
+      .tick { fill: #94a3b8; font: 16px ui-monospace, SFMono-Regular, Menlo, monospace; }
+      .guide { stroke: #334155; stroke-width: 1; stroke-dasharray: 4 6; }
+    </style>
+  </defs>
+
+  <rect width="960" height="430" rx="18" fill="#0f172a"/>
+  <text x="480" y="40" text-anchor="middle" class="title">
+    Slab intervals along one camera ray
+  </text>
+
+  <!-- shared t-axis guides: t = 2 ... 10 -->
+  <g>
+    <line x1="190" y1="75" x2="190" y2="375" class="guide"/>
+    <line x1="270" y1="75" x2="270" y2="375" class="guide"/>
+    <line x1="350" y1="75" x2="350" y2="375" class="guide"/>
+    <line x1="430" y1="75" x2="430" y2="375" class="guide"/>
+    <line x1="510" y1="75" x2="510" y2="375" class="guide"/>
+    <line x1="590" y1="75" x2="590" y2="375" class="guide"/>
+    <line x1="670" y1="75" x2="670" y2="375" class="guide"/>
+    <line x1="750" y1="75" x2="750" y2="375" class="guide"/>
+    <line x1="830" y1="75" x2="830" y2="375" class="guide"/>
+  </g>
+
+  <g text-anchor="middle" class="tick">
+    <text x="190" y="68">2</text>
+    <text x="270" y="68">3</text>
+    <text x="350" y="68">4</text>
+    <text x="430" y="68">5</text>
+    <text x="510" y="68">6</text>
+    <text x="590" y="68">7</text>
+    <text x="670" y="68">8</text>
+    <text x="750" y="68">9</text>
+    <text x="830" y="68">10</text>
+  </g>
+
+  <text x="145" y="68" text-anchor="end" class="label">t</text>
+
+  <g class="label" text-anchor="end">
+    <text x="145" y="130">x slab</text>
+    <text x="145" y="205">y slab</text>
+    <text x="145" y="280">z slab</text>
+    <text x="145" y="355">all three</text>
+  </g>
+
+  <!-- x: [2, 10] -->
+  <line x1="190" y1="124" x2="830" y2="124" stroke="#f87171" stroke-width="12" stroke-linecap="round"/>
+  <circle cx="190" cy="124" r="10" fill="#f87171"/>
+  <circle cx="830" cy="124" r="10" fill="#f87171"/>
+  <text x="510" y="112" text-anchor="middle" class="tick">[2, 10]</text>
+
+  <!-- y: [4, 8] -->
+  <line x1="350" y1="199" x2="670" y2="199" stroke="#4ade80" stroke-width="12" stroke-linecap="round"/>
+  <circle cx="350" cy="199" r="10" fill="#4ade80"/>
+  <circle cx="670" cy="199" r="10" fill="#4ade80"/>
+  <text x="510" y="187" text-anchor="middle" class="tick">[4, 8]</text>
+
+  <!-- z: [3, 7] -->
+  <line x1="270" y1="274" x2="590" y2="274" stroke="#60a5fa" stroke-width="12" stroke-linecap="round"/>
+  <circle cx="270" cy="274" r="10" fill="#60a5fa"/>
+  <circle cx="590" cy="274" r="10" fill="#60a5fa"/>
+  <text x="430" y="262" text-anchor="middle" class="tick">[3, 7]</text>
+
+  <!-- intersection: [4, 7] -->
+  <line x1="350" y1="349" x2="590" y2="349" stroke="#fbbf24" stroke-width="15" stroke-linecap="round"/>
+  <circle cx="350" cy="349" r="11" fill="#fbbf24"/>
+  <circle cx="590" cy="349" r="11" fill="#fbbf24"/>
+  <text x="470" y="337" text-anchor="middle" class="title">[4, 7]</text>
+
+  <text x="350" y="402" text-anchor="middle" class="tick">t_near = 4</text>
+  <text x="590" y="402" text-anchor="middle" class="tick">t_far = 7</text>
+</svg>

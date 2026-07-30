@@ -1,4 +1,4 @@
-# Volume 03 — Homogeneous Medium
+# 03 — Homogeneous Medium
 
 ## Goal
 
@@ -44,6 +44,12 @@ T(L)=e^{-\sigma L}.
 \]
 
 This is the Beer–Lambert law.
+
+![Transmittance decaying through a homogeneous medium](./beer-lambert.svg)
+
+All radiance is present at the entry, so \(T(0)=1\). With constant
+\(\sigma\), the surviving fraction \(T(L)\) decreases exponentially as the
+traveled distance \(L\) increases.
 
 ## 2. Density and absorption
 

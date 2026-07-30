@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 550" role="img" aria-labelledby="title desc">
+  <title id="title">Beer-Lambert transmittance</title>
+  <desc id="desc">Radiance traveling through a homogeneous medium decays exponentially with distance.</desc>
+  <defs>
+    <linearGradient id="beam" x1="0" x2="1">
+      <stop offset="0" stop-color="#fbbf24" stop-opacity="1"/>
+      <stop offset="1" stop-color="#fbbf24" stop-opacity=".08"/>
+    </linearGradient>
+    <style>
+      .title{fill:#e2e8f0;font:700 20px ui-monospace,monospace}.label{fill:#e2e8f0;font:17px ui-monospace,monospace}.small{fill:#94a3b8;font:14px ui-monospace,monospace}
+    </style>
+  </defs>
+  <rect width="960" height="550" rx="18" fill="#0f172a"/>
+  <text x="480" y="38" text-anchor="middle" class="title">Homogeneous medium: T(L) = exp(-σL)</text>
+
+  <rect x="185" y="80" width="590" height="175" rx="8" fill="#60a5fa" fill-opacity=".12" stroke="#60a5fa" stroke-width="3"/>
+  <path d="M85 168H865" stroke="url(#beam)" stroke-width="18" stroke-linecap="round"/>
+  <circle cx="185" cy="168" r="9" fill="#fbbf24"/>
+  <circle cx="775" cy="168" r="9" fill="#fbbf24" fill-opacity=".2"/>
+
+  <text x="185" y="280" text-anchor="middle" class="small">medium entry: s = 0</text>
+  <text x="775" y="280" text-anchor="middle" class="small">medium exit: s = L</text>
+  <text x="480" y="112" text-anchor="middle" class="label">constant extinction σ</text>
+
+  <!-- Conventional graph axes: larger T is higher, distance grows to the right. -->
+  <path d="M185 315V480H810" fill="none" stroke="#94a3b8" stroke-width="2"/>
+  <text x="165" y="320" text-anchor="end" class="label">T(s)</text>
+  <text x="820" y="486" class="label">s</text>
+  <text x="168" y="348" text-anchor="end" class="small">1</text>
+  <text x="185" y="505" text-anchor="middle" class="small">0</text>
+  <text x="775" y="505" text-anchor="middle" class="small">L</text>
+  <line x1="175" y1="342" x2="185" y2="342" stroke="#94a3b8" stroke-width="2"/>
+  <line x1="775" y1="475" x2="775" y2="485" stroke="#94a3b8" stroke-width="2"/>
+
+  <path d="M185 342 C280 375 365 410 465 435 C565 460 665 468 775 472"
+        fill="none" stroke="#4ade80" stroke-width="5" stroke-linecap="round"/>
+  <circle cx="185" cy="342" r="7" fill="#4ade80"/>
+  <circle cx="775" cy="472" r="7" fill="#4ade80"/>
+  <text x="205" y="330" class="small">T(0) = 1</text>
+  <text x="665" y="450" class="small">T(L) = exp(-σL)</text>
+
+  <text x="480" y="535" text-anchor="middle" class="small">Transmittance decreases exponentially with distance.</text>
+</svg>

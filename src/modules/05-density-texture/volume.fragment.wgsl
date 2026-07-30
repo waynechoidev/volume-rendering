@@ -22,14 +22,17 @@ struct RayInterval {
 @group(0) @binding(3) var<uniform> params: VolumeParameters;
 
 fn intersect_box(origin: vec3f, direction: vec3f) -> RayInterval {
+  let half_extent = params.half_extent;
+  let box_min = vec3f(-half_extent);
+  let box_max = vec3f(half_extent);
   let inverse_direction = 1.0 / direction;
-  let t0 = (-vec3f(params.half_extent) - origin) * inverse_direction;
-  let t1 = (vec3f(params.half_extent) - origin) * inverse_direction;
-  let smaller = min(t0, t1);
-  let larger = max(t0, t1);
+  let t0 = (box_min - origin) * inverse_direction;
+  let t1 = (box_max - origin) * inverse_direction;
+  let axis_near = min(t0, t1);
+  let axis_far = max(t0, t1);
   return RayInterval(
-    max(max(smaller.x, smaller.y), smaller.z),
-    min(min(larger.x, larger.y), larger.z),
+    max(max(axis_near.x, axis_near.y), axis_near.z),
+    min(min(axis_far.x, axis_far.y), axis_far.z),
   );
 }
 
@@ -48,7 +51,7 @@ fn main(@location(0) uv: vec2f) -> @location(0) vec4f {
   let interval = intersect_box(origin, direction);
   let entry = max(interval.near, 0.0);
   let background =
-    mix(vec3f(0.05, 0.12, 0.24), vec3f(0.35, 0.58, 0.78), uv.y);
+    mix(vec3f(0.018, 0.022, 0.032), vec3f(0.06, 0.07, 0.09), uv.y);
 
   if (interval.far <= entry) {
     return vec4f(background, 1.0);

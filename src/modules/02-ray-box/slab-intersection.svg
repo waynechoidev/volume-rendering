@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 520" role="img" aria-labelledby="title desc">
+  <title id="title">Three slab intersection</title>
+  <desc id="desc">Three pairs of axis-aligned planes overlap to form a box, and a camera ray enters and exits their common volume.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+      <path d="M0 0L8 4L0 8Z" fill="#f8fafc"/>
+    </marker>
+    <style>
+      .label { fill: #e2e8f0; font: 18px ui-monospace, SFMono-Regular, Menlo, monospace; }
+      .small { fill: #cbd5e1; font: 15px ui-monospace, SFMono-Regular, Menlo, monospace; }
+      .plane-label { font: 17px ui-monospace, SFMono-Regular, Menlo, monospace; font-weight: 700; }
+    </style>
+  </defs>
+
+  <rect width="960" height="520" rx="18" fill="#0f172a"/>
+  <text x="480" y="38" text-anchor="middle" class="label">box = x slab ∩ y slab ∩ z slab</text>
+
+  <!-- x-facing planes -->
+  <polygon points="250,165 390,90 390,330 250,405"
+           fill="#ef4444" fill-opacity=".17" stroke="#f87171" stroke-width="3"/>
+  <polygon points="570,165 710,90 710,330 570,405"
+           fill="#ef4444" fill-opacity=".17" stroke="#f87171" stroke-width="3"/>
+
+  <!-- y-facing planes -->
+  <polygon points="250,165 570,165 710,90 390,90"
+           fill="#22c55e" fill-opacity=".17" stroke="#4ade80" stroke-width="3"/>
+  <polygon points="250,405 570,405 710,330 390,330"
+           fill="#22c55e" fill-opacity=".17" stroke="#4ade80" stroke-width="3"/>
+
+  <!-- z-facing planes -->
+  <polygon points="250,165 570,165 570,405 250,405"
+           fill="#3b82f6" fill-opacity=".14" stroke="#60a5fa" stroke-width="3"/>
+  <polygon points="390,90 710,90 710,330 390,330"
+           fill="#3b82f6" fill-opacity=".10" stroke="#60a5fa" stroke-width="3"/>
+
+  <!-- box edges -->
+  <g fill="none" stroke="#f8fafc" stroke-opacity=".75" stroke-width="2">
+    <path d="M250 165H570V405H250Z"/>
+    <path d="M390 90H710V330H390Z"/>
+    <path d="M250 165L390 90M570 165L710 90M570 405L710 330M250 405L390 330"/>
+  </g>
+
+  <!-- ray -->
+  <line x1="90" y1="370" x2="860" y2="145" stroke="#f8fafc" stroke-width="4"
+        marker-end="url(#arrow)"/>
+  <circle cx="90" cy="370" r="7" fill="#f8fafc"/>
+  <circle cx="250" cy="323" r="8" fill="#fbbf24"/>
+  <circle cx="710" cy="189" r="8" fill="#fbbf24"/>
+
+  <text x="52" y="402" class="small">camera</text>
+  <text x="202" y="307" class="small">t_near</text>
+  <text x="720" y="181" class="small">t_far</text>
+
+  <text x="185" y="130" fill="#f87171" class="plane-label">x = -h</text>
+  <text x="716" y="113" fill="#f87171" class="plane-label">x = +h</text>
+  <text x="425" y="76" fill="#4ade80" class="plane-label">y = +h</text>
+  <text x="425" y="438" fill="#4ade80" class="plane-label">y = -h</text>
+  <text x="275" y="225" fill="#60a5fa" class="plane-label">z = -h</text>
+  <text x="604" y="302" fill="#60a5fa" class="plane-label">z = +h</text>
+
+  <text x="480" y="490" text-anchor="middle" class="small">
+    The ray is inside the box only while all three slab conditions are true.
+  </text>
+</svg>

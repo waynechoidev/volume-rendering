@@ -1,7 +1,7 @@
 # Volume Rendering
 
 A step-by-step WebGPU study of camera rays, volumetric transmittance, discrete
-ray marching, 3D density textures, and density-based cloud lighting.
+ray marching, 3D textures, and transfer-function rendering of 16-bit CT data.
 
 [Open the live sample](https://waynechoidev.github.io/volume-rendering/)
 
@@ -12,9 +12,10 @@ For every screen pixel, the renderer reconstructs a world-space camera ray,
 finds the interval inside a finite volume, samples density along that interval,
 and accumulates color and transmittance from front to back.
 
-The final module stores a connected cloud-like density field in a 3D texture.
-It estimates local shape from the density gradient and performs a short
-secondary march toward the light to approximate self-shadowing.
+The final module stores the isotropic \(256^3\) Aneurism angiography dataset in
+an `r8unorm` 3D texture and precomputes its gradient field. An interactive 2D
+transfer function maps intensity and gradient magnitude to vessel-boundary and
+dense-core color and extinction.
 
 The central discrete rendering equation is:
 
@@ -45,12 +46,13 @@ src/modules/
 ├── 03-homogeneous-medium/
 ├── 04-discrete-rendering/
 ├── 05-density-texture/
-└── 06-density-lighting/
+├── 06-aneurism-transfer-function/
+└── 07-2d-transfer-function/
 ```
 
 ### 00 — Overview
 
-Introduces the complete renderer and summarizes how the six implementation
+Introduces the complete renderer and summarizes how the seven implementation
 stages fit together. This directory contains documentation only; the runtime
 entry displays the final stage.
 
@@ -79,10 +81,16 @@ and front-to-back transmittance accumulation.
 Moves the scalar density field into a filterable 3D texture and explains
 world-to-texture mapping, voxel upload, and trilinear filtering.
 
-### 06 — Density Lighting
+### 06 — Aneurism 1D Transfer Function
 
-Builds the final connected cloud density field, estimates a pseudo-normal from
-density gradients, and approximates light transmittance with a secondary march.
+Loads the isotropic \(256^3\) Aneurism volume and maps scalar intensity to
+vascular color and extinction through editable bands on a 1D histogram.
+
+### 07 — Aneurism 2D Transfer Function
+
+Loads the isotropic \(256^3\) Aneurism angiography dataset, precomputes gradient
+magnitude on the GPU, and uses editable 2D regions to reveal vessel boundaries
+and dense contrast-filled cores.
 
 Every stage provides both `README.md` and `README.ko.md`. Use the `EN`/`KO`
 button in the runtime README viewer to switch languages.
@@ -95,8 +103,7 @@ screen UV
 → ray–volume interval
 → 3D density sampling
 → discrete transmittance and color accumulation
-→ density-gradient lighting
-→ light-ray optical-depth estimate
+→ intensity–gradient 2D transfer function
 → final pixel color
 ```
 
@@ -131,13 +138,13 @@ npm run build
 
 The final stage exposes:
 
+- `Vessel preset`: combined, boundary-only, or dense-core visualization
+- logarithmic intensity–gradient joint histogram with editable vessel regions
 - `Ray-march steps`: samples per intersecting camera ray
-- `Density`: multiplier applied to the stored scalar field
-- `Absorption`: extinction coefficient applied to density
-- `Cloud size`: half-extent of the volume box in world units
+- global opacity scale
 
-Mobile and coarse-pointer devices start with fewer ray-march steps to reduce
-fragment workload.
+Small screens start with fewer ray-march steps to reduce fragment workload
+without reducing the source volume resolution.
 
 ## GitHub Pages
 

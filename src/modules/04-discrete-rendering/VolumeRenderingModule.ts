@@ -10,7 +10,7 @@ export class VolumeRenderingModule extends Module {
   public stepCount = 96;
   public densityScale = 1.1;
   public absorption = 1.5;
-  public volumeSize = 3.2;
+  public volumeSize = 2;
 
   private pipeline!: GPURenderPipeline;
   private bindGroup!: GPUBindGroup;

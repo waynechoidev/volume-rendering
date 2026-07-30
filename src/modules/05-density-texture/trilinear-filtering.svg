@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 430" role="img" aria-labelledby="title desc">
+  <title id="title">Trilinear filtering</title>
+  <desc id="desc">A sample inside one voxel cell blends values from the eight surrounding voxel centers.</desc>
+  <defs>
+    <style>
+      .title{fill:#e2e8f0;font:700 20px ui-monospace,monospace}.label{fill:#e2e8f0;font:16px ui-monospace,monospace}.small{fill:#94a3b8;font:14px ui-monospace,monospace}
+    </style>
+  </defs>
+  <rect width="960" height="430" rx="18" fill="#0f172a"/>
+  <text x="480" y="38" text-anchor="middle" class="title">Trilinear filtering: blend 8 neighboring voxel values</text>
+  <g fill="#60a5fa" fill-opacity=".06" stroke="#60a5fa" stroke-width="3">
+    <path d="M245 155H610V360H245Z"/><path d="M375 75H740V280H375Z"/>
+    <path d="M245 155L375 75M610 155L740 75M610 360L740 280M245 360L375 280"/>
+  </g>
+  <g fill="#e2e8f0">
+    <circle cx="245" cy="155" r="9"/><circle cx="610" cy="155" r="9"/>
+    <circle cx="610" cy="360" r="9"/><circle cx="245" cy="360" r="9"/>
+    <circle cx="375" cy="75" r="9"/><circle cx="740" cy="75" r="9"/>
+    <circle cx="740" cy="280" r="9"/><circle cx="375" cy="280" r="9"/>
+  </g>
+  <circle cx="515" cy="205" r="13" fill="#fbbf24"/>
+  <g stroke="#fbbf24" stroke-opacity=".55" stroke-width="2" stroke-dasharray="6 6">
+    <line x1="515" y1="205" x2="245" y2="155"/><line x1="515" y1="205" x2="610" y2="155"/>
+    <line x1="515" y1="205" x2="610" y2="360"/><line x1="515" y1="205" x2="245" y2="360"/>
+    <line x1="515" y1="205" x2="375" y2="75"/><line x1="515" y1="205" x2="740" y2="75"/>
+    <line x1="515" y1="205" x2="740" y2="280"/><line x1="515" y1="205" x2="375" y2="280"/>
+  </g>
+  <text x="535" y="195" class="label">sample u</text>
+  <text x="480" y="398" text-anchor="middle" class="small">interpolate along x, then y, then z; nearer corners receive larger weights</text>
+</svg>

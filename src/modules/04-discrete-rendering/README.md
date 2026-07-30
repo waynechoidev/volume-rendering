@@ -1,4 +1,4 @@
-# Volume 04 — Discrete Volume Rendering
+# 04 — Discrete Volume Rendering
 
 ## Goal
 
@@ -10,6 +10,12 @@ integrated numerically.
 This stage implements the same discrete emission–absorption equation commonly
 used by neural radiance fields, but its density field is an analytic ellipsoid
 inside the WGSL shader. There is no 3D texture and no lighting.
+
+![Splitting a ray into segments, sampling midpoints, and accumulating front to back](./discrete-ray-marching.svg)
+
+The interval is divided into equal segments, density is evaluated at each
+midpoint, and samples update color and transmittance from the camera toward the
+back of the volume.
 
 ## 1. Continuous equation
 
@@ -178,6 +184,13 @@ density representation.
 | \(T_i\) | `transmittance` before update |
 | \(\mathbf{c}_i\) | `sample_color` |
 | \(\sum T_i\alpha_i\mathbf{c}_i\) | `radiance` |
+
+## Parameters
+
+- `Ray-march steps`: number of midpoint samples.
+- `Density`: multiplier applied to the analytic density field.
+- `Absorption`: absorption coefficient used by each segment.
+- `Volume size`: box half-extent, with a shared default of \(2\).
 
 ## Numerical behavior
 

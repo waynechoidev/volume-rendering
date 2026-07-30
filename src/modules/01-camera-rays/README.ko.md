@@ -1,6 +1,6 @@
-# Volume 01 — Camera Rays
+# 01 — Camera Rays
 
-## Goal
+## 목표
 
 Volume rendering은 pixel마다 하나의 3D ray를 따라 적분합니다. density나
 ray marching을 구현하기 전에 fragment shader가 2D screen coordinate로부터
@@ -10,7 +10,13 @@ ray marching을 구현하기 전에 fragment shader가 2D screen coordinate로�
 world-space ray direction \(\mathbf{d}\)로 변환하는 것입니다. 아직 ray와
 물체를 교차하거나 ray를 따라 적분하지 않습니다.
 
-## 1. From texture coordinates to normalized device coordinates
+![Screen UV에서 world-space camera ray를 복원하는 과정](./camera-ray-reconstruction.svg)
+
+그림처럼 한 pixel의 UV를 NDC로 옮기고, inverse view-projection matrix로
+far plane의 world-space point를 복원한 뒤, camera에서 그 점으로 향하는
+direction을 계산합니다.
+
+## 1. Texture Coordinate를 NDC로 변환
 
 fullscreen vertex shader는 다음 UV를 제공합니다.
 
@@ -33,7 +39,7 @@ UV convention에서는 screen \(y\) axis가 뒤집혀 있으므로 다음 식을
 let ndc = uv * vec2f(2.0, -2.0) + vec2f(-1.0, 1.0);
 ```
 
-## 2. Undoing the camera projection
+## 2. Camera Projection 되돌리기
 
 camera는 world-space 동차 좌표점(homogeneous point) \(\mathbf{p}_w\)를 clip space로
 변환합니다.
@@ -69,7 +75,7 @@ let far_world_h = camera.inverse_view_projection * far_clip;
 let far_world = far_world_h.xyz / far_world_h.w;
 ```
 
-## 3. Constructing the ray
+## 3. Ray 만들기
 
 ray는 다음과 같습니다.
 
@@ -92,7 +98,7 @@ let ray_direction = normalize(far_world - camera.position.xyz);
 
 정규화(normalization)했기 때문에 \(t\)는 world-space distance가 됩니다.
 
-## 4. Visualizing the result
+## 4. 결과 시각화
 
 이 단계에는 아직 rendering할 volume이 없습니다. 복원된 direction을 확인할
 수 있도록 부호 있는 성분(signed component) 범위 \([-1,1]\)을 color 범위 \([0,1]\)로
@@ -110,7 +116,7 @@ R, G, B는 각각 ray direction의 world-space \(x,y,z\) component를
 보여줍니다. 이 color는 debug visualization일 뿐이며 실제 결과는
 direction \(\mathbf{d}\)입니다.
 
-## Code correspondence
+## 수식과 코드의 대응
 
 | Mathematics | WGSL |
 | --- | --- |
@@ -120,7 +126,7 @@ direction \(\mathbf{d}\)입니다.
 | camera origin \(\mathbf{o}\) | `camera.position.xyz` |
 | ray direction \(\mathbf{d}\) | `ray_direction` |
 
-## GPU setup
+## GPU 구성
 
 `VolumeRenderingModule.ts`는 camera uniform binding 하나와 fullscreen
 render pipeline 하나를 만듭니다. 엔진은 `fullscreenVertexShader()`를 통해
@@ -137,7 +143,7 @@ struct CameraUniforms {
 };
 ```
 
-## What to verify
+## 확인할 사항
 
 - orbit할 때 RGB field가 연속적으로 변해야 합니다.
 - 중앙 pixel은 대략 camera target을 향해야 합니다.

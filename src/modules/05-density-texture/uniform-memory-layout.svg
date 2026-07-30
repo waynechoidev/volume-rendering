@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 300" role="img" aria-labelledby="title desc">
+  <title id="title">Volume parameter uniform memory layout</title>
+  <desc id="desc">A sixteen-byte uniform buffer contains four adjacent four-byte fields.</desc>
+  <style>
+    .title{fill:#e2e8f0;font:700 20px ui-monospace,monospace}.label{fill:#e2e8f0;font:15px ui-monospace,monospace}.small{fill:#94a3b8;font:13px ui-monospace,monospace}
+  </style>
+  <rect width="960" height="300" rx="18" fill="#0f172a"/>
+  <text x="480" y="38" text-anchor="middle" class="title">VolumeParameters: one 16-byte uniform buffer</text>
+  <g stroke="#0f172a" stroke-width="3">
+    <rect x="80" y="105" width="200" height="95" rx="8" fill="#f87171"/>
+    <rect x="280" y="105" width="200" height="95" fill="#fbbf24"/>
+    <rect x="480" y="105" width="200" height="95" fill="#4ade80"/>
+    <rect x="680" y="105" width="200" height="95" rx="8" fill="#60a5fa"/>
+  </g>
+  <g text-anchor="middle" fill="#0f172a" class="label">
+    <text x="180" y="145">step_count</text><text x="180" y="170">u32</text>
+    <text x="380" y="145">density_scale</text><text x="380" y="170">f32</text>
+    <text x="580" y="145">absorption</text><text x="580" y="170">f32</text>
+    <text x="780" y="145">half_extent</text><text x="780" y="170">f32</text>
+  </g>
+  <g text-anchor="middle" class="small">
+    <text x="180" y="225">bytes 0–3</text><text x="380" y="225">bytes 4–7</text>
+    <text x="580" y="225">bytes 8–11</text><text x="780" y="225">bytes 12–15</text>
+  </g>
+  <text x="480" y="270" text-anchor="middle" class="small">Uint32Array and Float32Array are typed views of the same ArrayBuffer.</text>
+</svg>

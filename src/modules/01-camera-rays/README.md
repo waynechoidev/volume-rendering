@@ -1,4 +1,4 @@
-# Volume 01 — Camera Rays
+# 01 — Camera Rays
 
 ## Goal
 
@@ -9,6 +9,11 @@ recover that ray from the two-dimensional screen coordinate.
 The goal of this stage is to transform the fullscreen UV coordinate
 \(\mathbf{u}=(u,v)\) into the corresponding world-space ray direction
 \(\mathbf{d}\). It does not intersect or integrate along the ray.
+
+![Reconstructing a world-space camera ray from a screen UV](./camera-ray-reconstruction.svg)
+
+The UV of one pixel is mapped to NDC, unprojected to a world-space point on the
+far plane, and then connected to the camera to obtain the ray direction.
 
 ## 1. From texture coordinates to normalized device coordinates
 
