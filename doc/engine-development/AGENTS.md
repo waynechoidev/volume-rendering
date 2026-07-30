@@ -164,18 +164,19 @@ main -> modules -> engine
 
 The engine must never import modules or application bootstrap code.
 
-Diagnostic and educational implementations such as Triangle and Engine
-Diagnostics belong in `src/modules/` alongside research implementations.
+Diagnostic and educational implementations belong in `src/modules/` alongside
+research implementations.
 
 The reusable application host belongs in `src/engine/application/`. Root
 `src/main.ts` selects active modules but contains no algorithm or GPU pipeline
 implementation.
 
 Runnable module classes are listed in an explicit `modules` list. Do not use
-filesystem-wide automatic discovery. Place the most recently added runnable
-module first because the first list entry is the default. Runtime switching must stop execution,
-destroy the previous module and its resources, construct the selected module,
-and then resume the engine.
+filesystem-wide automatic discovery. Order modules by their intended
+presentation sequence because the first list entry is the default. Progressive
+tutorials should use ascending step order. Runtime switching must stop
+execution, destroy the previous module and its resources, construct the
+selected module, and then resume the engine.
 
 ---
 
@@ -294,8 +295,8 @@ Example
 
 ```text
 modules/
-    volume-rendering/
-        volume.compute.wgsl
+    04-discrete-rendering/
+        VolumeRenderingModule.ts
         volume.fragment.wgsl
 ```
 

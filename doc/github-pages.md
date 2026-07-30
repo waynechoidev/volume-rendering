@@ -58,7 +58,7 @@ https://<account>.github.io/<repository-name>/
 
 The deployed sample for this repository is:
 
-<https://waynechoidev.github.io/webgpu-research-engine/>
+<https://waynechoidev.github.io/volume-rendering/>
 
 ## Troubleshooting
 

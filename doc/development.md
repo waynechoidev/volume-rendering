@@ -42,13 +42,6 @@ For every user-facing module:
 - Let animated modules run long enough to spot instability or continuing memory
   growth.
 
-For `Compute Texture`, additionally confirm:
-
-- The compute image covers the canvas without uninitialized edges.
-- Odd canvas dimensions render correctly.
-- Resizing preserves animation and only replaces the output texture.
-- No CPU readback is involved.
-
 When practical, repeat interactive checks on a real mobile device over the
 private network. Agents can run automated commands and temporary servers, but
 the user performs final browser and device-specific visual evaluation.
@@ -62,4 +55,3 @@ device loss.
 
 Adapter vendor and architecture strings are browser-provided descriptions, not
 guaranteed retail GPU model names.
-

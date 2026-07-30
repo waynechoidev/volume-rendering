@@ -1,106 +1,116 @@
-# WebGPU Research Engine
+# Volume Rendering
 
-A browser-first, compute-first engine for general-purpose WebGPU research and
-experimentation.
+A step-by-step WebGPU study of camera rays, volumetric transmittance, discrete
+ray marching, 3D density textures, and density-based cloud lighting.
 
-[Open the live sample](https://waynechoidev.github.io/webgpu-research-engine/)
+[Open the live sample](https://waynechoidev.github.io/volume-rendering/)
 
-## Getting Started
+## Abstract
+
+This project builds a volume renderer from the mathematical foundation upward.
+For every screen pixel, the renderer reconstructs a world-space camera ray,
+finds the interval inside a finite volume, samples density along that interval,
+and accumulates color and transmittance from front to back.
+
+The final module stores a connected cloud-like density field in a 3D texture.
+It estimates local shape from the density gradient and performs a short
+secondary march toward the light to approximate self-shadowing.
+
+The central discrete rendering equation is:
+
+\[
+\hat{\mathbf{C}}=
+\sum_{i=1}^{N}T_i\alpha_i\mathbf{c}_i+
+T_{N+1}\mathbf{c}_{bg},
+\]
+
+where:
+
+\[
+\alpha_i=1-\exp(-\sigma_i\delta_i),
+\qquad
+T_i=\prod_{j<i}(1-\alpha_j).
+\]
+
+Each stage keeps the corresponding WGSL, TypeScript integration, equations,
+and derivations together so the implementation can be studied incrementally.
+
+## Implementation Steps
+
+```text
+src/modules/
+├── 00-overview/
+├── 01-camera-rays/
+├── 02-ray-box/
+├── 03-homogeneous-medium/
+├── 04-discrete-rendering/
+├── 05-density-texture/
+└── 06-density-lighting/
+```
+
+### 00 — Overview
+
+Introduces the complete renderer and summarizes how the six implementation
+stages fit together. This directory contains documentation only; the runtime
+entry displays the final stage.
+
+### 01 — Camera Rays
+
+Transforms fullscreen UV coordinates into one normalized world-space ray
+direction per pixel using the camera's inverse view-projection matrix.
+
+### 02 — Ray Box Intersection
+
+Uses the slab method to find the near and far distances for which each ray lies
+inside an axis-aligned volume box.
+
+### 03 — Homogeneous Medium
+
+Fills the interval with constant density and derives the analytic
+Beer–Lambert transmittance and emission–absorption compositing equation.
+
+### 04 — Discrete Rendering
+
+Introduces spatially varying density, midpoint ray samples, per-segment opacity,
+and front-to-back transmittance accumulation.
+
+### 05 — Density Texture
+
+Moves the scalar density field into a filterable 3D texture and explains
+world-to-texture mapping, voxel upload, and trilinear filtering.
+
+### 06 — Density Lighting
+
+Builds the final connected cloud density field, estimates a pseudo-normal from
+density gradients, and approximates light transmittance with a secondary march.
+
+Every stage provides both `README.md` and `README.ko.md`. Use the `EN`/`KO`
+button in the runtime README viewer to switch languages.
+
+## Final Pipeline
+
+```text
+screen UV
+→ world-space camera ray
+→ ray–volume interval
+→ 3D density sampling
+→ discrete transmittance and color accumulation
+→ density-gradient lighting
+→ light-ray optical-depth estimate
+→ final pixel color
+```
+
+## Running Locally
 
 ```bash
 npm install
 npm run dev
 ```
 
-Open the local URL printed by Vite. The development server listens on
-`0.0.0.0`, so other devices on the same network can also connect when the
-development environment permits it.
+Open the URL printed by Vite. WebGPU requires a secure context: `localhost` is
+accepted locally, while access from another device must use trusted HTTPS.
 
-WebGPU requires a secure context. `localhost` is accepted for local development,
-but access from another device must be served through trusted HTTPS.
-
-For remote development:
-
-1. Run the Vite development server on its local HTTP port.
-2. Configure a trusted HTTPS reverse proxy or private-network serving tool to
-   forward its HTTPS hostname to the Vite port.
-3. Add that hostname to `DEV_ALLOWED_HOSTS` in the ignored `.env.local` file.
-4. Open the matching HTTPS hostname from the remote device.
-
-The certificate must match the hostname used by the browser. An HTTPS URL using
-a raw IP address or an unconfigured short hostname is not sufficient.
-
-## Camera Controls
-
-- Drag: orbit
-- Mouse wheel or pinch: zoom
-- Right-drag or Shift+drag: pan
-- Two-finger drag: pan
-
-## Project Structure
-
-```text
-src/
-├── engine/      # Reusable engine infrastructure
-├── modules/     # Examples and independent research modules
-└── main.ts      # Active module composition
-```
-
-Included modules:
-
-- `triangle`: minimal WebGPU rendering example
-- `engine-diagnostics`: camera, input, UI, statistics, and resource validation
-- `gpu-particles`: compute-driven particle simulation and instanced rendering
-
-The GPU Particle module keeps particle state in ping-pong storage buffers. A
-compute pass updates the state and the render pass consumes the new buffer
-directly, without CPU readback. Particle count changes recreate the
-size-dependent buffers; ordinary simulation parameters reuse existing GPU
-resources.
-
-## Selecting a Module
-
-`src/main.ts` is the composition entry point. Register module classes in its
-explicit `modules` list:
-
-```ts
-const application = new EngineApplication({
-  repositoryUrl: "https://github.com/owner/research-project",
-  modules: [
-    {
-      label: "Engine Diagnostics",
-      module: EngineDiagnosticsModule,
-      readme: {
-        en: engineDiagnosticsReadme,
-        ko: engineDiagnosticsReadmeKo,
-      },
-    },
-  ],
-});
-```
-
-The runtime module picker lists the configured entries. Selecting a module destroys
-the previous module and its resources and constructs the selected module class.
-Selection does not modify the page URL; reloading starts the first `modules`
-entry. Shared desktop and touch controls are available through the controls icon
-in the statistics panel. When a module supplies Markdown through `readme`, its
-separate `README` button opens a responsive viewer with KaTeX math rendering.
-Localized README entries can contain multiple language-code keys and be
-switched inside the viewer. This repository currently provides English and
-Korean module documentation.
-
-Each module owns its shaders, pipelines, algorithm-specific data, GPU resources,
-runtime parameters, and cleanup.
-
-## Documentation
-
-- [Engine API](doc/engine-api.md)
-- [Research module guide](doc/module-guide.md)
-- [Development and validation](doc/development.md)
-- [GitHub Pages deployment](doc/github-pages.md)
-- [Template project documentation](doc/template-project.md)
-
-## Verification
+Production verification:
 
 ```bash
 npm run typecheck
@@ -108,12 +118,36 @@ npm test
 npm run build
 ```
 
+## Controls
+
+- Drag: orbit
+- Mouse wheel or pinch: zoom
+- Right-drag or Shift+drag: pan
+- Two-finger drag: pan
+- Reset icon: restore the initial camera
+- README: open the equations and implementation notes for the selected stage
+
+## Runtime Parameters
+
+The final stage exposes:
+
+- `Ray-march steps`: samples per intersecting camera ray
+- `Density`: multiplier applied to the stored scalar field
+- `Absorption`: extinction coefficient applied to density
+- `Cloud size`: half-extent of the volume box in world units
+
+Mobile and coarse-pointer devices start with fewer ray-march steps to reduce
+fragment workload.
+
 ## GitHub Pages
 
-The workflow at `.github/workflows/deploy-pages.yml` tests, builds, and deploys
-the application whenever `main` is pushed. It derives the Vite base path from
-the GitHub repository name, so repositories created from this template do not
-need a hard-coded deployment path.
+Pushing `main` runs `.github/workflows/deploy-pages.yml`, which tests, builds,
+and deploys the project. Before the first deployment, set
+**Settings → Pages → Build and deployment → Source** to **GitHub Actions**.
 
-See [GitHub Pages deployment](doc/github-pages.md) for the required repository
-settings and deployment procedure.
+## Engine
+
+Built with
+[WebGPU Research Engine](https://github.com/waynechoidev/webgpu-research-engine).
+This repository contains the engine snapshot used during this project's
+development.

@@ -1,50 +1,68 @@
 import { EngineApplication } from "@/engine/application/EngineApplication";
-import { ComputeCircleModule } from "@/modules/compute-circle/ComputeCircleModule";
-import computeCircleReadme from "@/modules/compute-circle/README.md?raw";
-import computeCircleReadmeKo from "@/modules/compute-circle/README.ko.md?raw";
-import { ComputeTextureModule } from "@/modules/compute-texture/ComputeTextureModule";
-import computeTextureReadme from "@/modules/compute-texture/README.md?raw";
-import computeTextureReadmeKo from "@/modules/compute-texture/README.ko.md?raw";
-import { EngineDiagnosticsModule } from "@/modules/engine-diagnostics/EngineDiagnosticsModule";
-import engineDiagnosticsReadme from "@/modules/engine-diagnostics/README.md?raw";
-import engineDiagnosticsReadmeKo from "@/modules/engine-diagnostics/README.ko.md?raw";
-import { GPUParticleModule } from "@/modules/gpu-particles/GPUParticleModule";
-import gpuParticlesReadme from "@/modules/gpu-particles/README.md?raw";
-import gpuParticlesReadmeKo from "@/modules/gpu-particles/README.ko.md?raw";
-import { TriangleModule } from "@/modules/triangle/TriangleModule";
-import triangleReadme from "@/modules/triangle/README.md?raw";
-import triangleReadmeKo from "@/modules/triangle/README.ko.md?raw";
+import overviewReadme from "@/modules/00-overview/README.md?raw";
+import overviewReadmeKo from "@/modules/00-overview/README.ko.md?raw";
+import { VolumeRenderingModule as CameraRaysModule } from "@/modules/01-camera-rays/VolumeRenderingModule";
+import cameraRaysReadme from "@/modules/01-camera-rays/README.md?raw";
+import cameraRaysReadmeKo from "@/modules/01-camera-rays/README.ko.md?raw";
+import { VolumeRenderingModule as RayBoxModule } from "@/modules/02-ray-box/VolumeRenderingModule";
+import rayBoxReadme from "@/modules/02-ray-box/README.md?raw";
+import rayBoxReadmeKo from "@/modules/02-ray-box/README.ko.md?raw";
+import { VolumeRenderingModule as HomogeneousMediumModule } from "@/modules/03-homogeneous-medium/VolumeRenderingModule";
+import homogeneousMediumReadme from "@/modules/03-homogeneous-medium/README.md?raw";
+import homogeneousMediumReadmeKo from "@/modules/03-homogeneous-medium/README.ko.md?raw";
+import { VolumeRenderingModule as DiscreteRenderingModule } from "@/modules/04-discrete-rendering/VolumeRenderingModule";
+import discreteRenderingReadme from "@/modules/04-discrete-rendering/README.md?raw";
+import discreteRenderingReadmeKo from "@/modules/04-discrete-rendering/README.ko.md?raw";
+import { VolumeRenderingModule as DensityTextureModule } from "@/modules/05-density-texture/VolumeRenderingModule";
+import densityTextureReadme from "@/modules/05-density-texture/README.md?raw";
+import densityTextureReadmeKo from "@/modules/05-density-texture/README.ko.md?raw";
+import { VolumeRenderingModule as DensityLightingModule } from "@/modules/06-density-lighting/VolumeRenderingModule";
+import densityLightingReadme from "@/modules/06-density-lighting/README.md?raw";
+import densityLightingReadmeKo from "@/modules/06-density-lighting/README.ko.md?raw";
 
 const application = new EngineApplication({
-  repositoryUrl: "https://github.com/waynechoidev/webgpu-research-engine",
+  repositoryUrl: "https://github.com/waynechoidev/volume-rendering",
   modules: [
     {
-      label: "GPU Particles",
-      module: GPUParticleModule,
-      readme: { en: gpuParticlesReadme, ko: gpuParticlesReadmeKo },
+      label: "Volume Rendering",
+      module: DensityLightingModule,
+      readme: { en: overviewReadme, ko: overviewReadmeKo },
     },
     {
-      label: "Triangle",
-      module: TriangleModule,
-      readme: { en: triangleReadme, ko: triangleReadmeKo },
+      label: "01 Camera Rays",
+      module: CameraRaysModule,
+      readme: { en: cameraRaysReadme, ko: cameraRaysReadmeKo },
     },
     {
-      label: "Compute Circle",
-      module: ComputeCircleModule,
-      readme: { en: computeCircleReadme, ko: computeCircleReadmeKo },
+      label: "02 Ray Box Intersection",
+      module: RayBoxModule,
+      readme: { en: rayBoxReadme, ko: rayBoxReadmeKo },
     },
     {
-      label: "Engine Diagnostics",
-      module: EngineDiagnosticsModule,
+      label: "03 Homogeneous Medium",
+      module: HomogeneousMediumModule,
       readme: {
-        en: engineDiagnosticsReadme,
-        ko: engineDiagnosticsReadmeKo,
+        en: homogeneousMediumReadme,
+        ko: homogeneousMediumReadmeKo,
       },
     },
     {
-      label: "Compute Texture",
-      module: ComputeTextureModule,
-      readme: { en: computeTextureReadme, ko: computeTextureReadmeKo },
+      label: "04 Discrete Rendering",
+      module: DiscreteRenderingModule,
+      readme: {
+        en: discreteRenderingReadme,
+        ko: discreteRenderingReadmeKo,
+      },
+    },
+    {
+      label: "05 Density Texture",
+      module: DensityTextureModule,
+      readme: { en: densityTextureReadme, ko: densityTextureReadmeKo },
+    },
+    {
+      label: "06 Density Lighting",
+      module: DensityLightingModule,
+      readme: { en: densityLightingReadme, ko: densityLightingReadmeKo },
     },
   ],
 });
