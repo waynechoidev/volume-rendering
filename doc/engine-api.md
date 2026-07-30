@@ -41,6 +41,9 @@ overlay shows a language-code button only when multiple documents exist,
 cycles through all registered languages, and preserves the selection across
 module changes. This repository currently supplies Korean as its only
 additional language. Engine-level controls documentation remains English-only.
+The Markdown and KaTeX renderer is loaded on demand when a README or controls
+guide is opened, so documentation dependencies do not increase the initial
+JavaScript bundle.
 
 ## Module lifecycle
 

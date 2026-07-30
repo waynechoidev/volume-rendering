@@ -1,5 +1,6 @@
 import katex from "katex";
 import { marked } from "marked";
+import "katex/dist/katex.min.css";
 
 export function renderReadme(source: string): string {
   const formulas: string[] = [];

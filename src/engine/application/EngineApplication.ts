@@ -1,7 +1,5 @@
 import { Engine } from "@/engine/core/Engine";
 import type { EngineModule } from "@/engine/core/EngineModule";
-import { renderReadme } from "@/engine/application/render-readme";
-import "katex/dist/katex.min.css";
 import "@/engine/application/styles.css";
 
 const COMMON_CONTROLS = `# Controls
@@ -70,6 +68,10 @@ export class EngineApplication {
   private activeReadme: ReadmeSource | undefined;
   private readmeLanguage: ReadmeLanguage;
   private readmeCloseTimer: number | undefined;
+  private readmeRenderer:
+    | Promise<typeof import("@/engine/application/render-readme")>
+    | undefined;
+  private readmeRenderVersion = 0;
   private destroyed = false;
   private switchVersion = 0;
 
@@ -319,18 +321,18 @@ export class EngineApplication {
 
   private readonly openControlsGuide = (): void => {
     this.activeReadme = COMMON_CONTROLS;
-    this.renderActiveReadme();
     this.showReadmeDialog();
     this.resetReadmeScroll();
+    void this.renderActiveReadme();
   };
 
   private readonly openReadme = (): void => {
     const entry = this.modules[this.moduleSelect.selectedIndex];
     if (!entry?.readme) return;
     this.activeReadme = entry.readme;
-    this.renderActiveReadme();
     this.showReadmeDialog();
     this.resetReadmeScroll();
+    void this.renderActiveReadme();
   };
 
   private readonly toggleReadmeLanguage = (): void => {
@@ -346,14 +348,15 @@ export class EngineApplication {
     const currentIndex = languages.indexOf(currentLanguage);
     this.readmeLanguage =
       languages[(currentIndex + 1) % languages.length] ?? "en";
-    this.renderActiveReadme();
+    void this.renderActiveReadme();
   };
 
-  private renderActiveReadme(): void {
+  private async renderActiveReadme(): Promise<void> {
     const source = this.activeReadme;
     if (!source) {
       return;
     }
+    const version = ++this.readmeRenderVersion;
 
     const localized: LocalizedReadme =
       typeof source === "string" ? { en: source } : source;
@@ -375,7 +378,32 @@ export class EngineApplication {
     this.readmeCloseButton.textContent = "Close";
     this.readmeCloseButton.setAttribute("aria-label", "Close README");
     this.readmeContent.lang = language;
-    this.readmeContent.innerHTML = renderReadme(markdown);
+    if (!this.readmeRenderer) {
+      this.readmeContent.textContent = "Loading README…";
+    }
+
+    try {
+      this.readmeRenderer ??= import(
+        "@/engine/application/render-readme"
+      );
+      const { renderReadme } = await this.readmeRenderer;
+      if (
+        this.destroyed ||
+        version !== this.readmeRenderVersion ||
+        source !== this.activeReadme
+      ) {
+        return;
+      }
+      this.readmeContent.innerHTML = renderReadme(markdown);
+      this.resetReadmeScroll();
+    } catch (error) {
+      this.readmeRenderer = undefined;
+      if (version !== this.readmeRenderVersion || this.destroyed) {
+        return;
+      }
+      console.error(error);
+      this.readmeContent.textContent = "Unable to load README.";
+    }
   }
 
   private readonly closeReadme = (): void => {
@@ -435,6 +463,7 @@ export class EngineApplication {
       return;
     }
     this.activeReadme = undefined;
+    this.readmeRenderVersion += 1;
     this.resetReadmeScroll();
     this.readmeButton.hidden = !entry.readme;
 
