@@ -12,26 +12,26 @@ For every screen pixel, the renderer reconstructs a world-space camera ray,
 finds the interval inside a finite volume, samples density along that interval,
 and accumulates color and transmittance from front to back.
 
-The final module stores the isotropic \(256^3\) Aneurism angiography dataset in
+The final module stores the isotropic $256^3$ Aneurism angiography dataset in
 an `r8unorm` 3D texture and precomputes its gradient field. An interactive 2D
 transfer function maps intensity and gradient magnitude to vessel-boundary and
 dense-core color and extinction.
 
 The central discrete rendering equation is:
 
-\[
+$$
 \hat{\mathbf{C}}=
 \sum_{i=1}^{N}T_i\alpha_i\mathbf{c}_i+
 T_{N+1}\mathbf{c}_{bg},
-\]
+$$
 
 where:
 
-\[
+$$
 \alpha_i=1-\exp(-\sigma_i\delta_i),
 \qquad
 T_i=\prod_{j<i}(1-\alpha_j).
-\]
+$$
 
 Each stage keeps the corresponding WGSL, TypeScript integration, equations,
 and derivations together so the implementation can be studied incrementally.
@@ -83,12 +83,12 @@ world-to-texture mapping, voxel upload, and trilinear filtering.
 
 ### 06 — Aneurism 1D Transfer Function
 
-Loads the isotropic \(256^3\) Aneurism volume and maps scalar intensity to
+Loads the isotropic $256^3$ Aneurism volume and maps scalar intensity to
 vascular color and extinction through editable bands on a 1D histogram.
 
 ### 07 — Aneurism 2D Transfer Function
 
-Loads the isotropic \(256^3\) Aneurism angiography dataset, precomputes gradient
+Loads the isotropic $256^3$ Aneurism angiography dataset, precomputes gradient
 magnitude on the GPU, and uses editable 2D regions to reveal vessel boundaries
 and dense contrast-filled cores.
 

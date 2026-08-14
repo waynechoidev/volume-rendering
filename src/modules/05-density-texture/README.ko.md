@@ -8,38 +8,38 @@ stage 04는 WGSL 함수에서 density를 직접 계산했습니다. 이 단계�
 
 volume rendering equation은 그대로입니다.
 
-\[
+$$
 \alpha_i=1-e^{-\sigma_i\delta_i},
 \qquad
 T_i=\prod_{j<i}(1-\alpha_j),
-\]
+$$
 
-\[
+$$
 \hat{\mathbf{C}}
 =
 \sum_i T_i\alpha_i\mathbf{c}_i
 +
 T_{N+1}\mathbf{c}_{bg}.
-\]
+$$
 
-\(\sigma_i\)의 표현(representation)만 변경됩니다.
+$\sigma_i$의 표현(representation)만 변경됩니다.
 
 ## 1. 연속적인 Position을 Texture Coordinate로 변환
 
 world-space box의 범위는:
 
-\[
+$$
 \mathbf{x}\in[-h,h]^3.
-\]
+$$
 
-정규화된 texture coordinate는 \([0,1]^3\)이어야 합니다. 전체 너비(full width)
-\(2h\)로 나눠 \([-1/2,1/2]\)를 만든 뒤 \(1/2\)를 더합니다.
+정규화된 texture coordinate는 $[0,1]^3$이어야 합니다. 전체 너비(full width)
+$2h$로 나눠 $[-1/2,1/2]$를 만든 뒤 $1/2$를 더합니다.
 
-\[
+$$
 \mathbf{u}
 =
 \frac{\mathbf{x}}{2h}+\frac12.
-\]
+$$
 
 ```wgsl
 fn world_to_texture(position: vec3f) -> vec3f {
@@ -51,38 +51,38 @@ fn world_to_texture(position: vec3f) -> vec3f {
 
 ## 2. Voxel Data 만들기
 
-`density-data.ts`는 \(48^3\) grid를 만듭니다. voxel \((x,y,z)\)의
-중심(center)은 \([-1,1]^3\)으로 mapping됩니다.
+`density-data.ts`는 $48^3$ grid를 만듭니다. voxel $(x,y,z)$의
+중심(center)은 $[-1,1]^3$으로 mapping됩니다.
 
-\[
+$$
 p_x=2\frac{x+1/2}{W}-1.
-\]
+$$
 
-\(p_y,p_z\)도 같은 방식이며 ellipsoidal distance는:
+$p_y,p_z$도 같은 방식이며 ellipsoidal distance는:
 
-\[
+$$
 q=
 \sqrt{
 \left(\frac{p_x}{0.82}\right)^2+
 \left(\frac{p_y}{0.55}\right)^2+
 \left(\frac{p_z}{0.70}\right)^2
 }.
-\]
+$$
 
 부드러운 density 전이(transition)는:
 
-\[
+$$
 \rho=1-\operatorname{smoothstep}(0.25,1,q).
-\]
+$$
 
 스칼라(scalar)는 `r8unorm`으로 양자화(quantization)합니다.
 
-\[
+$$
 v=\operatorname{round}(255\rho).
-\]
+$$
 
-sampling할 때 WebGPU는 byte를 대략 \(v/255\)로 변환합니다. 양자화
-오차(quantization error)는 최대 약 \(1/(2\cdot255)\)입니다.
+sampling할 때 WebGPU는 byte를 대략 $v/255$로 변환합니다. 양자화
+오차(quantization error)는 최대 약 $1/(2\cdot255)$입니다.
 
 ## 3. 3D Texture Upload
 
@@ -109,8 +109,8 @@ this.volumeTexture = new TextureResource(this.device, {
 }
 ```
 
-한 byte가 voxel 하나, 한 row가 \(x\) scanline 하나를 저장하며
-`rowsPerImage`는 다음 \(z\) slice로 이동합니다.
+한 byte가 voxel 하나, 한 row가 $x$ scanline 하나를 저장하며
+`rowsPerImage`는 다음 $z$ slice로 이동합니다.
 
 ## 4. 삼선형 필터링(Trilinear Filtering)
 
@@ -119,11 +119,11 @@ this.volumeTexture = new TextureResource(this.device, {
 
 ![한 sample을 둘러싼 여덟 voxel 값을 결합하는 삼선형 필터링](./trilinear-filtering.svg)
 
-\[
+$$
 \operatorname{lerp}(a,b,f)=(1-f)a+fb.
-\]
+$$
 
-\(x,y,z\) 순서로 적용하면 여덟 모서리 값(corner value)을 결합합니다.
+$x,y,z$ 순서로 적용하면 여덟 모서리 값(corner value)을 결합합니다.
 
 ```wgsl
 let density = textureSampleLevel(
@@ -134,7 +134,7 @@ let density = textureSampleLevel(
 ).r * params.density_scale;
 ```
 
-필터링(filtering)이 없으면 \(48^3\) grid가 voxel block으로 보입니다.
+필터링(filtering)이 없으면 $48^3$ grid가 voxel block으로 보입니다.
 
 ## 5. Binding 구성
 
@@ -157,7 +157,7 @@ WGSL에 선언된 type으로 기록할 수 있습니다.
 - `Ray-march steps`: 중점 texture sample 개수
 - `Density`: sampling한 density에 적용하는 배수
 - `Absorption`: 각 segment에 사용하는 absorption coefficient
-- `Volume size`: box의 half-extent이며 공통 기본값은 \(2\)
+- `Volume size`: box의 half-extent이며 공통 기본값은 $2$
 
 ## 7. 이 단계에서 제외한 기능
 

@@ -8,69 +8,69 @@ ray marching is not needed yet.
 
 ## 1. Extinction over an infinitesimal distance
 
-Let \(T(s)\) be the fraction of radiance that survives after traveling distance
-\(s\). For a short distance \(ds\), the removed fraction is proportional to:
+Let $T(s)$ be the fraction of radiance that survives after traveling distance
+$s$. For a short distance $ds$, the removed fraction is proportional to:
 
-- the current surviving fraction \(T(s)\),
-- the extinction coefficient \(\sigma\),
-- the traveled distance \(ds\).
+- the current surviving fraction $T(s)$,
+- the extinction coefficient $\sigma$,
+- the traveled distance $ds$.
 
 Therefore:
 
-\[
+$$
 dT=-\sigma T(s)\,ds,
-\]
+$$
 
 or:
 
-\[
+$$
 \frac{dT}{ds}=-\sigma T.
-\]
+$$
 
 Separating variables gives:
 
-\[
+$$
 \frac{dT}{T}=-\sigma\,ds.
-\]
+$$
 
-Integrating from \(0\) to \(L\), with \(T(0)=1\):
+Integrating from $0$ to $L$, with $T(0)=1$:
 
-\[
+$$
 \ln T(L)-\ln 1=-\sigma L,
-\]
+$$
 
-\[
+$$
 T(L)=e^{-\sigma L}.
-\]
+$$
 
 This is the Beer–Lambert law.
 
 ![Transmittance decaying through a homogeneous medium](./beer-lambert.svg)
 
-All radiance is present at the entry, so \(T(0)=1\). With constant
-\(\sigma\), the surviving fraction \(T(L)\) decreases exponentially as the
-traveled distance \(L\) increases.
+All radiance is present at the entry, so $T(0)=1$. With constant
+$\sigma$, the surviving fraction $T(L)$ decreases exponentially as the
+traveled distance $L$ increases.
 
 ## 2. Density and absorption
 
-The module separates a dimensionless density control \(\rho\) from an
-absorption coefficient \(\kappa\):
+The module separates a dimensionless density control $\rho$ from an
+absorption coefficient $\kappa$:
 
-\[
+$$
 \sigma=\kappa\rho.
-\]
+$$
 
 For the ray length from stage 02:
 
-\[
+$$
 \tau=\kappa\rho L
-\]
+$$
 
 is the optical depth, and:
 
-\[
+$$
 T=e^{-\tau}.
-\]
+$$
 
 ```wgsl
 let optical_depth =
@@ -80,33 +80,33 @@ let transmittance = exp(-optical_depth);
 
 ## 3. Compositing a constant medium color
 
-The lost background fraction is \(1-T\). If the homogeneous medium contributes
-a constant color \(\mathbf{c}_m\), the result is:
+The lost background fraction is $1-T$. If the homogeneous medium contributes
+a constant color $\mathbf{c}_m$, the result is:
 
-\[
+$$
 \mathbf{C}=(1-T)\mathbf{c}_m+T\mathbf{c}_{bg}.
-\]
+$$
 
 This can also be derived from the continuous emission–absorption integral:
 
-\[
+$$
 \mathbf{C}_{m}
 =
 \int_0^L T(s)\sigma\mathbf{c}_m\,ds.
-\]
+$$
 
-Substitute \(T(s)=e^{-\sigma s}\):
+Substitute $T(s)=e^{-\sigma s}$:
 
-\[
+$$
 \mathbf{C}_{m}
 =
 \mathbf{c}_m
 \int_0^L \sigma e^{-\sigma s}\,ds
 =
 (1-e^{-\sigma L})\mathbf{c}_m.
-\]
+$$
 
-Adding the surviving background \(e^{-\sigma L}\mathbf{c}_{bg}\) produces the
+Adding the surviving background $e^{-\sigma L}\mathbf{c}_{bg}$ produces the
 compositing equation above.
 
 ## Exact WGSL
@@ -138,9 +138,9 @@ The TypeScript side writes the same four 32-bit slots with a
 
 ## Parameters
 
-- `Density` changes \(\rho\).
-- `Absorption` changes \(\kappa\).
-- `Volume size` changes both the box and the possible path length \(L\).
+- `Density` changes $\rho$.
+- `Absorption` changes $\kappa$.
+- `Volume size` changes both the box and the possible path length $L$.
 
 Doubling either density or absorption doubles optical depth. Doubling volume
 size does not uniformly double every path, but it increases central paths

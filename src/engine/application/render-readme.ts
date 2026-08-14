@@ -4,6 +4,7 @@ import "katex/dist/katex.min.css";
 
 export function renderReadme(source: string): string {
   const formulas: string[] = [];
+  const codeSegments: string[] = [];
   const protect = (
     expression: string,
     displayMode: boolean,
@@ -20,13 +21,31 @@ export function renderReadme(source: string): string {
       : `<span data-readme-math="${index}"></span>`;
   };
 
-  const protectedSource = source
-    .replace(/\\\[([\s\S]*?)\\\]/g, (_match, expression: string) =>
+  const protectCode = (code: string): string => {
+    const index = codeSegments.push(code) - 1;
+    return `README_CODE_${index}_TOKEN`;
+  };
+
+  const protectedCode = source
+    .replace(
+      /^(`{3,}|~{3,})[^\n]*\n[\s\S]*?^\1[ \t]*$/gm,
+      (code) => protectCode(code),
+    )
+    .replace(/(`+)([^\n]*?)\1/g, (code) => protectCode(code));
+
+  const protectedMath = protectedCode
+    .replace(/\$\$([\s\S]*?)\$\$/g, (_match, expression: string) =>
       protect(expression, true),
     )
-    .replace(/\\\((.+?)\\\)/g, (_match, expression: string) =>
-      protect(expression, false),
+    .replace(
+      /(^|[^\\$])\$([^$\n]+?)\$(?!\$)/gm,
+      (_match, prefix: string, expression: string) =>
+        `${prefix}${protect(expression, false)}`,
     );
+  const protectedSource = protectedMath.replace(
+    /README_CODE_(\d+)_TOKEN/g,
+    (_match, index: string) => codeSegments[Number(index)] ?? "",
+  );
   let html = marked.parse(protectedSource, { async: false }) as string;
 
   html = html.replace(

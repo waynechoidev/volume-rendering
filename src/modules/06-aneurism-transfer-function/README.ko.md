@@ -4,34 +4,34 @@
 rendering합니다. intensity만 사용하는 기준 구현이며, 07장에서는 여기에
 gradient magnitude를 추가합니다.
 
-\(256^3\) unsigned 8-bit isotropic dataset은 `src/data/aneurism/`에 한 번만
+$256^3$ unsigned 8-bit isotropic dataset은 `src/data/aneurism/`에 한 번만
 두고 두 장이 공유합니다. Philips Research, Hamburg, Germany에서 제공한
 자료입니다. voxel의 99% 이상은 0이며, 0이 아닌 값은 주로 조영제가 채워진
 혈관 구조를 나타냅니다.
 
 ## 1. Scalar Intensity
 
-raw file에서 voxel \((x,y,z)\)의 위치는:
+raw file에서 voxel $(x,y,z)$의 위치는:
 
-\[
+$$
 i=x+256(y+256z).
-\]
+$$
 
 원본 byte를 filterable `r8unorm` 3D texture에 그대로 upload합니다. texture
 sampling 결과는 정규화되어 있으므로 원본 intensity는:
 
-\[
+$$
 v=255\,\operatorname{textureSample}(\mathbf u).
-\]
+$$
 
 ## 2. 1D Transfer Function
 
-transfer function은 intensity \(v\) 하나를 방출 color \(\mathbf c\)와
-extinction \(\sigma\)로 변환합니다.
+transfer function은 intensity $v$ 하나를 방출 color $\mathbf c$와
+extinction $\sigma$로 변환합니다.
 
-\[
+$$
 \tau(v):v\longmapsto(\mathbf c,\sigma).
-\]
+$$
 
 editor는 실제 intensity histogram과 편집 가능한 band 두 개를 표시합니다.
 
@@ -40,33 +40,33 @@ editor는 실제 intensity histogram과 편집 가능한 band 두 개를 표시�
 | Vessels | 18–180 | 넓은 범위의 붉은 혈관 구조 |
 | Dense core | 145–255 | 밝은 고강도 내부 |
 
-부드러운 범위 weight를 \(R(v;a,b)\)라고 하면 sample 값은:
+부드러운 범위 weight를 $R(v;a,b)$라고 하면 sample 값은:
 
-\[
+$$
 \mathbf c(v)=
 \frac{w_v\mathbf c_v+w_c\mathbf c_c}
 {\max(w_v+w_c,\epsilon)},
 \qquad
 \sigma(v)=k(a_vw_v+a_cw_c).
-\]
+$$
 
-여기서 \(w_v=R(v;v_0,v_1)\), \(w_c=R(v;c_0,c_1)\)이고, \(a_v,a_c\)는
-band opacity, \(k\)는 전체 opacity scale입니다.
+여기서 $w_v=R(v;v_0,v_1)$, $w_c=R(v;c_0,c_1)$이고, $a_v,a_c$는
+band opacity, $k$는 전체 opacity scale입니다.
 
 ## 3. Rendering
 
 ray marcher는 world-space step을 voxel distance로 바꿉니다.
 
-\[
+$$
 \delta_{\mathrm{voxel}}=
 \delta_{\mathrm{world}}\frac{256}{2h_x}.
-\]
+$$
 
 Beer–Lambert 감쇠(attenuation)로 sample 하나의 opacity를 구합니다.
 
-\[
+$$
 \alpha_i=1-\exp(-\sigma_i\delta_{\mathrm{voxel}}).
-\]
+$$
 
 그다음 04장에서 유도한 front-to-back 합성으로 sample을 누적합니다. 이
 단계에는 gradient texture와 lighting이 없습니다. 따라서 vessel 경계와

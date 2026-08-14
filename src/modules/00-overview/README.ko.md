@@ -53,7 +53,7 @@ position을 texture coordinate로 mapping하고 삼선형 필터링(trilinear fi
 
 ### 06 — Aneurism 1D Transfer Function
 
-isotropic \(256^3\) Aneurism angiography dataset을 load하고 scalar intensity를
+isotropic $256^3$ Aneurism angiography dataset을 load하고 scalar intensity를
 편집 가능한 1D histogram band를 통해 혈관 color와 extinction으로 바꿉니다.
 경계와 내부를 같은 값 하나로 분류할 때 생기는 모호함을 확인합니다.
 

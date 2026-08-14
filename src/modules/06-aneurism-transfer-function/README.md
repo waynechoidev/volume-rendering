@@ -4,34 +4,34 @@ This chapter renders the Aneurism angiography volume with a one-dimensional
 transfer function. It establishes the intensity-only baseline that chapter 07
 extends with gradient magnitude.
 
-The isotropic \(256^3\) unsigned 8-bit dataset is stored once in
+The isotropic $256^3$ unsigned 8-bit dataset is stored once in
 `src/data/aneurism/` and shared by both chapters. It was provided courtesy of
 Philips Research, Hamburg, Germany. More than 99% of the voxels are zero; the
 nonzero values primarily describe the contrast-filled vascular structure.
 
 ## 1. Scalar intensity
 
-The raw byte at voxel \((x,y,z)\) is addressed by:
+The raw byte at voxel $(x,y,z)$ is addressed by:
 
-\[
+$$
 i=x+256(y+256z).
-\]
+$$
 
 It is uploaded unchanged to a filterable `r8unorm` 3D texture. Texture
 sampling returns a normalized value, so the source intensity is:
 
-\[
+$$
 v=255\,\operatorname{textureSample}(\mathbf u).
-\]
+$$
 
 ## 2. The 1D transfer function
 
-A transfer function maps the single intensity \(v\) to emitted color
-\(\mathbf c\) and extinction \(\sigma\):
+A transfer function maps the single intensity $v$ to emitted color
+$\mathbf c$ and extinction $\sigma$:
 
-\[
+$$
 \tau(v):v\longmapsto(\mathbf c,\sigma).
-\]
+$$
 
 The editor shows the volume's intensity histogram and two editable bands:
 
@@ -40,33 +40,33 @@ The editor shows the volume's intensity histogram and two editable bands:
 | Vessels | 18–180 | broad red vascular structure |
 | Dense core | 145–255 | pale high-intensity interior |
 
-For a feathered range weight \(R(v;a,b)\), the sample values are:
+For a feathered range weight $R(v;a,b)$, the sample values are:
 
-\[
+$$
 \mathbf c(v)=
 \frac{w_v\mathbf c_v+w_c\mathbf c_c}
 {\max(w_v+w_c,\epsilon)},
 \qquad
 \sigma(v)=k(a_vw_v+a_cw_c).
-\]
+$$
 
-Here \(w_v=R(v;v_0,v_1)\), \(w_c=R(v;c_0,c_1)\), \(a_v,a_c\) are band
-opacities, and \(k\) is the global opacity scale.
+Here $w_v=R(v;v_0,v_1)$, $w_c=R(v;c_0,c_1)$, $a_v,a_c$ are band
+opacities, and $k$ is the global opacity scale.
 
 ## 3. Rendering
 
 The ray marcher converts its world-space step to voxel distance:
 
-\[
+$$
 \delta_{\mathrm{voxel}}=
 \delta_{\mathrm{world}}\frac{256}{2h_x}.
-\]
+$$
 
 Beer–Lambert attenuation gives the opacity of one sample:
 
-\[
+$$
 \alpha_i=1-\exp(-\sigma_i\delta_{\mathrm{voxel}}).
-\]
+$$
 
 Samples are accumulated front to back using the equation derived in chapter
 04. There is no gradient texture or lighting in this stage. Consequently,

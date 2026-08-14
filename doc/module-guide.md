@@ -82,8 +82,10 @@ readme: { en: readmeEn, ko: readmeKo, ja: readmeJa }
 When multiple languages are present, the README overlay displays the next
 language code, such as `KO`, and cycles through the available documents. It
 initially uses the browser's primary language when available, falls back to
-English, and preserves the selection while switching modules. Markdown and
-LaTeX-style `\(...\)` / `\[...\]` formulas are rendered in every language.
+English, and preserves the selection while switching modules. Write inline
+math with `$...$` and display math with `$$...$$` in every language. These are
+the only supported math delimiters; do not use legacy parenthesis or bracket
+math delimiters.
 Keep localized documents technically synchronized. Keep their main title in
 English and write established graphics and API terminology in English.
 

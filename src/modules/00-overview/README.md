@@ -50,7 +50,7 @@ a continuous density estimate between voxels.
 
 ### 06 — Aneurism 1D Transfer Function
 
-Load the isotropic \(256^3\) Aneurism angiography dataset and map its scalar
+Load the isotropic $256^3$ Aneurism angiography dataset and map its scalar
 intensity to vessel color and extinction with editable 1D histogram bands.
 This exposes the ambiguity of classifying boundaries and interiors by the same
 single value.

@@ -109,7 +109,9 @@ other translations unless the user requests them. Register every available
 document through the localized readme object and keep formulas, code examples,
 and technical coverage synchronized. Keep the main document title in English
 in every language version, and retain established graphics and API terms in
-English rather than spelling their pronunciation in Hangul.
+English rather than spelling their pronunciation in Hangul. Write inline math
+with `$...$` and display math with `$$...$$` only. Do not use legacy
+parenthesis or bracket math delimiters.
 
 ---
 

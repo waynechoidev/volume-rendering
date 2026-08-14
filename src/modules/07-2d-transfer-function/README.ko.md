@@ -5,7 +5,7 @@
 C-arm X-ray scan이며 aneurism이 포함되어 있습니다. Philips Research,
 Hamburg, Germany에서 제공했습니다.
 
-stage 06과 같은 unsigned 8-bit \(256^3\) isotropic Aneurism volume을
+stage 06과 같은 unsigned 8-bit $256^3$ isotropic Aneurism volume을
 사용합니다. dataset과 ray marcher를 그대로 유지하고 transfer-function
 domain만 1D intensity에서 2D intensity–gradient로 확장하므로 두 방식의
 차이를 직접 비교할 수 있습니다.
@@ -14,23 +14,23 @@ domain만 1D intensity에서 2D intensity–gradient로 확장하므로 두 방�
 
 volume은:
 
-\[
+$$
 256^3=16{,}777{,}216
-\]
+$$
 
-개의 sample과 \(1:1:1\) spacing을 가집니다. raw file의 voxel index는:
+개의 sample과 $1:1:1$ spacing을 가집니다. raw file의 voxel index는:
 
-\[
+$$
 i=x+256(y+256z).
-\]
+$$
 
 byte 값을 변환하지 않고 filterable `r8unorm` 3D texture에 upload합니다.
-texture sampling 결과는 \([0,1]\)이므로 shader에서 source domain으로
+texture sampling 결과는 $[0,1]$이므로 shader에서 source domain으로
 복원합니다.
 
-\[
+$$
 v=255\,\operatorname{textureSample}(\mathbf{u}).
-\]
+$$
 
 세 축의 spacing이 같으므로 world volume은 cube이며 slice 축 scale 보정이
 필요하지 않습니다.
@@ -41,13 +41,13 @@ v=255\,\operatorname{textureSample}(\mathbf{u}).
 비슷한 값을 가진 내부를 구분하기 어렵습니다. classifier는 다음 두 값을
 사용합니다.
 
-\[
+$$
 \tau(v,g):(v,g)\longmapsto(\mathbf{c},\sigma),
 \qquad
 g=\|\nabla v\|.
-\]
+$$
 
-가로축 \(v\)는 source intensity를 선택하고 세로축 \(g\)는 주변 voxel에서
+가로축 $v$는 source intensity를 선택하고 세로축 $g$는 주변 voxel에서
 intensity가 얼마나 빠르게 변하는지 선택합니다. dense한 혈관 내부는 보통
 높은 intensity와 낮은 gradient를 가지며 혈관 벽은 더 강한 gradient를
 가집니다.
@@ -56,32 +56,32 @@ intensity가 얼마나 빠르게 변하는지 선택합니다. dense한 혈관 �
 
 setup에서 compute shader가 central difference를 계산합니다.
 
-\[
+$$
 v_x\approx\frac{v(x+1,y,z)-v(x-1,y,z)}{2},
-\]
+$$
 
-\[
+$$
 v_y\approx\frac{v(x,y+1,z)-v(x,y-1,z)}{2},
 \qquad
 v_z\approx\frac{v(x,y,z+1)-v(x,y,z-1)}{2}.
-\]
+$$
 
 isotropic spacing이므로 모든 분모는 2입니다. gradient magnitude와
 direction은:
 
-\[
+$$
 g=\sqrt{v_x^2+v_y^2+v_z^2},
 \qquad
 \mathbf{n}=\frac{\nabla v}{\max(g,\epsilon)}.
-\]
+$$
 
 `4×4×4` compute workgroup이 `rgba8unorm` 3D texture에 저장합니다.
 
-\[
+$$
 \text{RGB}=\frac{\mathbf{n}}2+\frac12,
 \qquad
 A=\operatorname{clamp}\left(\frac{g}{128},0,1\right).
-\]
+$$
 
 미리 계산하므로 ray-march sample마다 intensity 이웃을 6번 추가로 읽지
 않아도 됩니다.
@@ -90,13 +90,13 @@ A=\operatorname{clamp}\left(\frac{g}{128},0,1\right).
 
 editor는 다음을 표시합니다.
 
-\[
+$$
 H(i,j)=\#\{\mathbf{x}\mid v(\mathbf{x})\in I_i,\,
 g(\mathbf{x})\in G_j\}.
-\]
+$$
 
-- 가로축: intensity \(0\ldots255\)
-- 세로축: gradient magnitude \(0\ldots128\)
+- 가로축: intensity $0\ldots255$
+- 세로축: gradient magnitude $0\ldots128$
 - 밝기: 0이 아닌 voxel 개수의 log 값
 
 sparse한 혈관 구조가 보이도록 UI histogram에서는 값이 0인 background
@@ -113,48 +113,48 @@ visualization 시작점이며 임상 segmentation이 아닙니다.
 
 ## 5. Region Classification
 
-구간 \([a,b]\)에는 feather가 있는 range weight를 사용합니다.
+구간 $[a,b]$에는 feather가 있는 range weight를 사용합니다.
 
-\[
+$$
 R(x;a,b)=R_{\min}(x)R_{\max}(x).
-\]
+$$
 
-아래쪽 factor는 `smoothstep`으로 증가하고 위쪽 factor는 \(b\) 근처에서
+아래쪽 factor는 `smoothstep`으로 증가하고 위쪽 factor는 $b$ 근처에서
 감소합니다. region이 0이나 domain maximum에 닿으면 해당 edge를 열어 두어
 정확히 0 또는 255인 값이 사라지지 않게 합니다.
 
 2D region은 두 coordinate weight를 곱합니다.
 
-\[
+$$
 w_m(v,g)=
 R(v;v_{m,0},v_{m,1})
 R(g;g_{m,0},g_{m,1}).
-\]
+$$
 
 color와 extinction은:
 
-\[
+$$
 \mathbf{c}=
 \frac{w_v\mathbf{c}_v+w_c\mathbf{c}_c}
 {\max(w_v+w_c,\epsilon)},
 \qquad
 \sigma=k(a_vw_v+a_cw_c).
-\]
+$$
 
 UI extinction은 임의의 world unit이 아니라 voxel 하나를 기준으로
 정의합니다. 따라서 world-space step을 voxel distance로 변환합니다.
 
-\[
+$$
 \delta_{\mathrm{voxel}}=
 \delta_{\mathrm{world}}
 \frac{N_x}{2h_x}.
-\]
+$$
 
 ray marcher는 extinction을 step opacity로 변환합니다.
 
-\[
+$$
 \alpha_i=1-\exp(-\sigma_i\delta_{\mathrm{voxel}}).
-\]
+$$
 
 그다음 stage 04에서 유도한 front-to-back 합성(compositing) 방정식을 그대로
 사용합니다. 이 정규화로 world volume 크기나 ray-march sample 수가 바뀌어도
